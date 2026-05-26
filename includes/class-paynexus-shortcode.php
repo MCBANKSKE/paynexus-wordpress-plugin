@@ -68,7 +68,6 @@ class PayNexus_Shortcode {
                     <small class="paynexus-hint"><?php esc_html_e( 'Format: 254712345678', 'paynexus' ); ?></small>
                 </div>
 
-                <input type="hidden" name="account_reference" value="<?php echo esc_attr( $atts['reference'] ); ?>" />
                 <input type="hidden" name="description" value="<?php echo esc_attr( $atts['description'] ); ?>" />
 
                 <button type="submit" class="paynexus-btn" data-paynexus-submit>

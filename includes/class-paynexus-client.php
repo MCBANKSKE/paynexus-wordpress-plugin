@@ -70,7 +70,6 @@ class PayNexus_Client {
      *     @type int    $payment_account_id Optional. Auto-resolved if omitted.
      *     @type float  $amount             Required.
      *     @type string $phone              Required.
-     *     @type string $account_reference  Optional. Max 12 chars.
      *     @type string $description        Optional.
      *     @type array  $metadata           Optional.
      * }
@@ -92,7 +91,6 @@ class PayNexus_Client {
             'payment_account_id' => $payment_account_id,
             'amount'             => floatval( $data['amount'] ),
             'phone'              => sanitize_text_field( $data['phone'] ),
-            'account_reference'  => substr( sanitize_text_field( $data['account_reference'] ?? 'PAYNEXUS' ), 0, 12 ),
             'description'        => sanitize_text_field( $data['description'] ?? 'Payment via PayNexus' ),
         );
 
@@ -110,7 +108,6 @@ class PayNexus_Client {
                 'currency'            => $payment_data['currency'] ?? paynexus()->get_option( 'currency', 'KES' ),
                 'phone'               => $data['phone'],
                 'description'         => $payload['description'],
-                'account_reference'   => $payload['account_reference'],
                 'status'              => 'pending',
                 'metadata'            => isset( $data['metadata'] ) ? wp_json_encode( $data['metadata'] ) : null,
             ) );
@@ -140,7 +137,6 @@ class PayNexus_Client {
             'payment_account_id' => $payment_account_id,
             'amount'             => floatval( $data['amount'] ),
             'phone'              => sanitize_text_field( $data['phone'] ),
-            'account_reference'  => substr( sanitize_text_field( $data['account_reference'] ?? 'PAYNEXUS' ), 0, 12 ),
             'description'        => sanitize_text_field( $data['description'] ?? 'Payment via PayNexus' ),
             'remark'             => sanitize_text_field( $data['remark'] ?? 'Website Payment' ),
         );
@@ -159,7 +155,6 @@ class PayNexus_Client {
                 'currency'            => paynexus()->get_option( 'currency', 'KES' ),
                 'phone'               => $data['phone'],
                 'description'         => $payload['description'],
-                'account_reference'   => $payload['account_reference'],
                 'status'              => 'pending',
                 'metadata'            => isset( $data['metadata'] ) ? wp_json_encode( $data['metadata'] ) : null,
             ) );

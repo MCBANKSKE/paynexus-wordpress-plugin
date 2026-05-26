@@ -149,10 +149,9 @@ final class PayNexus {
         }
 
         $data = array(
-            'amount'            => $amount,
-            'phone'             => $phone,
-            'account_reference' => sanitize_text_field( wp_unslash( $_POST['account_reference'] ?? 'PAYNEXUS' ) ),
-            'description'       => sanitize_text_field( wp_unslash( $_POST['description'] ?? 'Payment via PayNexus' ) ),
+            'amount'      => $amount,
+            'phone'       => $phone,
+            'description' => sanitize_text_field( wp_unslash( $_POST['description'] ?? 'Payment via PayNexus' ) ),
         );
 
         $payment_account_id = intval( $_POST['payment_account_id'] ?? 0 );

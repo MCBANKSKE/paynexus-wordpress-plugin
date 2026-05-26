@@ -132,10 +132,9 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
         }
 
         $data = array(
-            'amount'            => floatval( $order->get_total() ),
-            'phone'             => $phone,
-            'account_reference' => substr( $order->get_order_number(), 0, 12 ),
-            'description'       => sprintf(
+            'amount'      => floatval( $order->get_total() ),
+            'phone'       => $phone,
+            'description' => sprintf(
                 /* translators: %s: order number */
                 __( 'Order %s', 'paynexus' ),
                 $order->get_order_number()

@@ -39,12 +39,11 @@
             url: params.ajax_url,
             method: 'POST',
             data: {
-                action:            'paynexus_initiate_payment',
-                nonce:             params.nonce,
-                phone:             phone,
-                amount:            amount,
-                account_reference: $form.find('[name="account_reference"]').val() || 'PAYNEXUS',
-                description:       $form.find('[name="description"]').val() || 'Payment via PayNexus'
+                action:      'paynexus_initiate_payment',
+                nonce:       params.nonce,
+                phone:       phone,
+                amount:      amount,
+                description: $form.find('[name="description"]').val() || 'Payment via PayNexus'
             },
             success: function (res) {
                 if (res.success) {
