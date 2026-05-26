@@ -1,0 +1,90 @@
+/**
+ * PayNexus Admin Styles
+ */
+
+.paynexus-admin h1 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.paynexus-info-box {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-left: 4px solid #2271b1;
+    padding: 12px 20px;
+    margin: 20px 0;
+    max-width: 800px;
+}
+
+.paynexus-info-box h3 {
+    margin-top: 0;
+}
+
+.paynexus-info-box ol {
+    margin-bottom: 0;
+}
+
+.paynexus-connection-test {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    padding: 12px 20px;
+    margin: 20px 0;
+    max-width: 800px;
+}
+
+.paynexus-connection-test.success {
+    border-left: 4px solid #00a32a;
+}
+
+.paynexus-connection-test.error {
+    border-left: 4px solid #d63638;
+}
+
+.paynexus-connection-test .dashicons-yes-alt {
+    color: #00a32a;
+}
+
+.paynexus-connection-test .dashicons-dismiss {
+    color: #d63638;
+}
+
+.paynexus-filters {
+    margin: 15px 0;
+}
+
+.paynexus-filters form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Status badges */
+.paynexus-status {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.paynexus-status-pending {
+    background: #fcf0e3;
+    color: #9a6700;
+}
+
+.paynexus-status-completed {
+    background: #e6f4ea;
+    color: #1e7e34;
+}
+
+.paynexus-status-failed {
+    background: #fce8e6;
+    color: #c5221f;
+}
+
+.paynexus-status-timeout {
+    background: #f1f1f1;
+    color: #616161;
+}
