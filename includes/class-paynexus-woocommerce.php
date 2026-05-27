@@ -11,7 +11,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
 
     public function __construct() {
         $this->id                 = 'paynexus';
-        $this->icon               = PAYNEXUS_PLUGIN_URL . 'assets/images/mpesa-logo.png';
+        $this->icon               = PAYNEXUS_PLUGIN_URL . 'assets/images/logo.png';
         $this->has_fields         = true;
         $this->method_title       = __( 'PayNexus (M-Pesa)', 'paynexus' );
         $this->method_description = __( 'Accept M-Pesa payments via PayNexus. Customers receive an STK Push on their phone to complete payment.', 'paynexus' );
