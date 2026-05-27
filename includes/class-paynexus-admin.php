@@ -26,7 +26,7 @@ class PayNexus_Admin {
             'manage_options',
             'paynexus',
             array( $this, 'render_settings_page' ),
-            PAYNEXUS_PLUGIN_URL . 'assets/images/logo.png',
+            'dashicons-money-alt',
             58
         );
 
@@ -194,7 +194,7 @@ class PayNexus_Admin {
         ?>
         <div class="wrap paynexus-admin">
             <h1>
-                <img src="<?php echo esc_url( PAYNEXUS_PLUGIN_URL . 'assets/images/logo.png' ); ?>" alt="PayNexus" style="height:30px;margin-right:8px;vertical-align:middle;">
+                <span class="dashicons dashicons-money-alt" style="font-size:30px;margin-right:8px;vertical-align:middle;"></span>
                 <?php esc_html_e( 'PayNexus Settings', 'paynexus' ); ?>
             </h1>
 
@@ -289,7 +289,7 @@ class PayNexus_Admin {
         ?>
         <div class="wrap paynexus-admin">
             <h1>
-                <img src="<?php echo esc_url( PAYNEXUS_PLUGIN_URL . 'assets/images/logo.png' ); ?>" alt="PayNexus" style="height:30px;margin-right:8px;vertical-align:middle;">
+                <span class="dashicons dashicons-money-alt" style="font-size:30px;margin-right:8px;vertical-align:middle;"></span>
                 <?php esc_html_e( 'PayNexus Payments', 'paynexus' ); ?>
             </h1>
 

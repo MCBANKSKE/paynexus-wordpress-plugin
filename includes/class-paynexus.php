@@ -203,13 +203,11 @@ final class PayNexus {
             wp_send_json_error( array( 'message' => __( 'A checkout request ID or reference is required.', 'paynexus' ) ) );
         }
 
-        // Query real-time M-Pesa status from Safaricom via PayNexus API.
+        // Query the PayNexus server database for payment status.
         $result = array( 'success' => false );
         if ( ! empty( $checkout_request_id ) ) {
-            $result = $this->client->check_mpesa_status( $checkout_request_id );
+            $result = $this->client->get_payment_by_checkout_id( $checkout_request_id );
         }
-
-        // Fall back to database lookup by reference if real-time check is unavailable.
         if ( empty( $result['success'] ) && ! empty( $reference ) ) {
             $result = $this->client->get_payment_by_reference( $reference );
         }

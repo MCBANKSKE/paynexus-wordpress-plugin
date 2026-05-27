@@ -382,6 +382,16 @@ class PayNexus_Client {
             $updates['provider_reference'] = $provider_ref;
         }
 
+        $payer_name = $data['payer_name'] ?? null;
+        if ( $payer_name && empty( $local->payer_name ) ) {
+            $updates['payer_name'] = $payer_name;
+        }
+
+        $failure_reason = $data['failure_reason'] ?? null;
+        if ( $failure_reason && empty( $local->failure_reason ) ) {
+            $updates['failure_reason'] = $failure_reason;
+        }
+
         $pnx_id = $data['id'] ?? $data['payment_id'] ?? null;
         if ( $pnx_id && empty( $local->paynexus_payment_id ) ) {
             $updates['paynexus_payment_id'] = intval( $pnx_id );

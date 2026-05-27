@@ -11,7 +11,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
 
     public function __construct() {
         $this->id                 = 'paynexus';
-        $this->icon               = PAYNEXUS_PLUGIN_URL . 'assets/images/logo.png';
+        $this->icon               = PAYNEXUS_PLUGIN_URL . 'assets/images/mpesa-logo.png';
         $this->has_fields         = true;
         $this->method_title       = __( 'PayNexus (M-Pesa)', 'paynexus' );
         $this->method_description = __( 'Accept M-Pesa payments via PayNexus. Customers receive an STK Push on their phone to complete payment.', 'paynexus' );
@@ -170,6 +170,10 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
 
     /**
      * Thank-you page content with status polling.
+     *
+     * Outputs a self-contained inline script (vanilla JS, no jQuery)
+     * that polls the PayNexus server database for payment status
+     * and updates the WooCommerce order automatically.
      */
     public function thankyou_page( $order_id ) {
         $order         = wc_get_order( $order_id );
@@ -185,16 +189,71 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
             return;
         }
 
-        wp_enqueue_script( 'paynexus-payment' );
-        wp_enqueue_style( 'paynexus-payment' );
+        $poll_interval = absint( paynexus()->get_option( 'poll_interval', 3 ) ) * 1000;
+        $poll_timeout  = absint( paynexus()->get_option( 'poll_timeout', 120 ) ) * 1000;
+        $ajax_url      = admin_url( 'admin-ajax.php' );
+        $nonce         = wp_create_nonce( 'paynexus_payment' );
         ?>
-        <div class="paynexus-order-status" id="paynexus-order-status"
-             data-checkout-id="<?php echo esc_attr( $checkout_id ); ?>"
-             data-reference="<?php echo esc_attr( $reference ); ?>"
-             data-order-url="<?php echo esc_url( $order->get_view_order_url() ); ?>">
-            <div class="paynexus-spinner"></div>
-            <p class="paynexus-status-message"><?php esc_html_e( 'Waiting for M-Pesa confirmation...', 'paynexus' ); ?></p>
+        <div class="paynexus-order-status" id="paynexus-order-status">
+            <div class="paynexus-spinner" id="paynexus-spinner" style="display:inline-block;width:20px;height:20px;border:3px solid #ccc;border-top-color:#333;border-radius:50%;animation:paynexus-spin 0.8s linear infinite;margin-right:8px;vertical-align:middle;"></div>
+            <p class="paynexus-status-message" id="paynexus-status-msg" style="display:inline;vertical-align:middle;"><?php esc_html_e( 'Waiting for M-Pesa confirmation...', 'paynexus' ); ?></p>
         </div>
+        <style>@keyframes paynexus-spin{to{transform:rotate(360deg)}}</style>
+        <script>
+        (function(){
+            var checkoutId = <?php echo wp_json_encode( $checkout_id ); ?>;
+            var reference  = <?php echo wp_json_encode( $reference ); ?>;
+            var ajaxUrl    = <?php echo wp_json_encode( $ajax_url ); ?>;
+            var nonce      = <?php echo wp_json_encode( $nonce ); ?>;
+            var interval   = <?php echo (int) $poll_interval; ?> || 3000;
+            var timeout    = <?php echo (int) $poll_timeout; ?> || 120000;
+            var start      = Date.now();
+            var spinner    = document.getElementById('paynexus-spinner');
+            var msg        = document.getElementById('paynexus-status-msg');
+
+            if (!checkoutId && !reference) return;
+
+            var timer = setInterval(function(){
+                if (Date.now() - start > timeout) {
+                    clearInterval(timer);
+                    if (spinner) spinner.style.display = 'none';
+                    if (msg) msg.textContent = 'Payment confirmation timed out. Your payment may still be processing — please check your order status.';
+                    return;
+                }
+
+                var body = new FormData();
+                body.append('action', 'paynexus_check_status');
+                body.append('nonce', nonce);
+                if (checkoutId) body.append('checkout_request_id', checkoutId);
+                if (reference) body.append('reference', reference);
+
+                fetch(ajaxUrl, {method:'POST', body:body, credentials:'same-origin'})
+                    .then(function(r){ return r.json(); })
+                    .then(function(res){
+                        if (!res || !res.success) return;
+                        var d = res.data || {};
+                        var status = d.status || '';
+
+                        if (status === 'completed') {
+                            clearInterval(timer);
+                            if (spinner) spinner.style.display = 'none';
+                            if (msg) {
+                                msg.innerHTML = '<strong style="color:#1e7e34;">Payment completed successfully!</strong>';
+                                if (d.provider_transaction_id || d.transaction_id) {
+                                    msg.innerHTML += '<br>Transaction: ' + (d.provider_transaction_id || d.transaction_id);
+                                }
+                            }
+                            setTimeout(function(){ window.location.reload(); }, 2000);
+                        } else if (status === 'failed') {
+                            clearInterval(timer);
+                            if (spinner) spinner.style.display = 'none';
+                            if (msg) msg.innerHTML = '<strong style="color:#c5221f;">Payment failed: ' + (d.failure_reason || d.result_description || 'Unknown error') + '</strong>';
+                        }
+                    })
+                    .catch(function(){});
+            }, interval);
+        })();
+        </script>
         <?php
     }
 
