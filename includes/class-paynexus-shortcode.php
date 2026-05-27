@@ -43,10 +43,17 @@ class PayNexus_Shortcode {
         wp_enqueue_style( 'paynexus-payment' );
         wp_enqueue_script( 'paynexus-payment' );
 
+        $mpesa_logo = PAYNEXUS_PLUGIN_URL . 'assets/images/mpesa-logo.png';
+
         ob_start();
         ?>
         <div class="paynexus-payment-form-wrap <?php echo esc_attr( $atts['class'] ); ?>" id="paynexus-payment-form">
-            <form class="paynexus-form" data-paynexus-form>
+            <form class="paynexus-form pnx-form-branded" data-paynexus-form>
+                <div class="pnx-form-header">
+                    <img src="<?php echo esc_url( $mpesa_logo ); ?>" alt="M-Pesa" class="pnx-form-logo" />
+                    <span class="pnx-form-title"><?php esc_html_e( 'M-Pesa Payment', 'paynexus' ); ?></span>
+                </div>
+
                 <?php if ( $show_amount ) : ?>
                     <div class="paynexus-field">
                         <label for="paynexus-amount"><?php printf( esc_html__( 'Amount (%s)', 'paynexus' ), esc_html( $currency ) ); ?></label>
@@ -62,17 +69,42 @@ class PayNexus_Shortcode {
 
                 <div class="paynexus-field">
                     <label for="paynexus-phone"><?php esc_html_e( 'M-Pesa Phone Number', 'paynexus' ); ?></label>
-                    <input type="tel" id="paynexus-phone" name="phone"
-                           required pattern="^(?:\+?254|0)\d{9}$"
-                           placeholder="<?php esc_attr_e( '254712345678', 'paynexus' ); ?>" />
-                    <small class="paynexus-hint"><?php esc_html_e( 'Format: 254712345678', 'paynexus' ); ?></small>
+                    <div class="pnx-phone-wrap">
+                        <span class="pnx-phone-prefix">+254</span>
+                        <input type="tel" id="paynexus-phone" name="phone"
+                               required pattern="^(?:\+?254|0)\d{9}$"
+                               placeholder="<?php esc_attr_e( '712345678', 'paynexus' ); ?>"
+                               class="pnx-phone-input" />
+                    </div>
+                    <small class="paynexus-hint"><?php esc_html_e( 'Enter your M-Pesa registered phone number', 'paynexus' ); ?></small>
                 </div>
 
                 <input type="hidden" name="description" value="<?php echo esc_attr( $atts['description'] ); ?>" />
 
+                <div class="pnx-summary" id="pnx-payment-summary" style="display:none;">
+                    <div class="pnx-summary__row">
+                        <span><?php esc_html_e( 'Amount', 'paynexus' ); ?></span>
+                        <strong id="pnx-summary-amount"></strong>
+                    </div>
+                    <div class="pnx-summary__row">
+                        <span><?php esc_html_e( 'Phone', 'paynexus' ); ?></span>
+                        <strong id="pnx-summary-phone"></strong>
+                    </div>
+                    <div class="pnx-summary__row">
+                        <span><?php esc_html_e( 'Description', 'paynexus' ); ?></span>
+                        <strong id="pnx-summary-desc"><?php echo esc_html( $atts['description'] ); ?></strong>
+                    </div>
+                </div>
+
                 <button type="submit" class="paynexus-btn" data-paynexus-submit>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                     <?php echo esc_html( $atts['button_text'] ); ?>
                 </button>
+
+                <div class="pnx-secured">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
+                    <?php esc_html_e( 'Secured by PayNexus', 'paynexus' ); ?>
+                </div>
             </form>
 
             <div class="paynexus-status-area" data-paynexus-status style="display:none;">
@@ -96,20 +128,27 @@ class PayNexus_Shortcode {
         wp_enqueue_style( 'paynexus-payment' );
         wp_enqueue_script( 'paynexus-payment' );
 
+        $mpesa_logo = PAYNEXUS_PLUGIN_URL . 'assets/images/mpesa-logo.png';
+
         ob_start();
         ?>
         <div class="paynexus-status-checker" id="paynexus-status-checker">
-            <form class="paynexus-form" data-paynexus-status-form>
+            <form class="paynexus-form pnx-form-branded" data-paynexus-status-form>
+                <div class="pnx-form-header">
+                    <img src="<?php echo esc_url( $mpesa_logo ); ?>" alt="M-Pesa" class="pnx-form-logo" />
+                    <span class="pnx-form-title"><?php esc_html_e( 'Payment Status', 'paynexus' ); ?></span>
+                </div>
                 <div class="paynexus-field">
                     <label for="paynexus-ref"><?php esc_html_e( 'Payment Reference', 'paynexus' ); ?></label>
                     <input type="text" id="paynexus-ref" name="reference" required
                            placeholder="<?php esc_attr_e( 'PNX...', 'paynexus' ); ?>" />
                 </div>
                 <button type="submit" class="paynexus-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <?php esc_html_e( 'Check Status', 'paynexus' ); ?>
                 </button>
             </form>
-            <div class="paynexus-result" data-paynexus-status-result style="display:none;"></div>
+            <div class="pnx-receipt" data-paynexus-status-result style="display:none;"></div>
         </div>
         <?php
         return ob_get_clean();

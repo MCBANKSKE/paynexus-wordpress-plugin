@@ -219,37 +219,8 @@ final class PayNexus {
         $data   = $result['data'] ?? $result;
         $status = $data['status'] ?? '';
 
-        // Sync local payment record with API response.
-        // Note: get_payment_by_checkout_id() already calls sync_local_record(),
-        // but get_payment_by_reference() does not, so we sync here for consistency.
-        if ( ! empty( $reference ) && empty( $checkout_request_id ) ) {
-            $local = PayNexus_Payment::find_by( 'reference', $reference );
-            if ( $local ) {
-                $updates = array();
-                if ( $status && $status !== $local->status ) {
-                    $updates['status'] = $status;
-                }
-                $txn_id = $data['provider_transaction_id'] ?? $data['transaction_id'] ?? null;
-                if ( $txn_id && empty( $local->transaction_id ) ) {
-                    $updates['transaction_id'] = $txn_id;
-                }
-                $provider_ref = $data['provider_reference'] ?? null;
-                if ( $provider_ref ) {
-                    $updates['provider_reference'] = $provider_ref;
-                }
-                $payer_name = $data['payer_name'] ?? null;
-                if ( $payer_name && empty( $local->payer_name ) ) {
-                    $updates['payer_name'] = $payer_name;
-                }
-                $failure_reason = $data['failure_reason'] ?? null;
-                if ( $failure_reason && empty( $local->failure_reason ) ) {
-                    $updates['failure_reason'] = $failure_reason;
-                }
-                if ( ! empty( $updates ) ) {
-                    PayNexus_Payment::update_payment( $local->id, $updates );
-                }
-            }
-        }
+        // Ensure the local payment record is synced with the API response.
+        $this->client->sync_local_record( $result );
 
         // Update WooCommerce order when payment reaches a final state.
         if ( in_array( $status, array( 'completed', 'failed' ), true ) && function_exists( 'wc_get_order' ) ) {

@@ -5,32 +5,60 @@
 .paynexus-admin h1 {
     display: flex;
     align-items: center;
+    gap: 4px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
+/* Environment badge */
+.pnx-env-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 12px;
+    vertical-align: middle;
+}
+
+.pnx-env-badge--live {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.pnx-env-badge--test {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+/* Info box */
 .paynexus-info-box {
     background: #fff;
     border: 1px solid #c3c4c7;
-    border-left: 4px solid #2271b1;
+    border-left: 4px solid #00A650;
     padding: 12px 20px;
     margin: 20px 0;
     max-width: 800px;
+    border-radius: 0 4px 4px 0;
 }
 
 .paynexus-info-box h3 {
     margin-top: 0;
+    color: #1d2327;
 }
 
 .paynexus-info-box ol {
     margin-bottom: 0;
 }
 
+/* Connection test */
 .paynexus-connection-test {
     background: #fff;
     border: 1px solid #c3c4c7;
     padding: 12px 20px;
     margin: 20px 0;
     max-width: 800px;
+    border-radius: 0 4px 4px 0;
 }
 
 .paynexus-connection-test.success {
@@ -49,34 +77,133 @@
     color: #d63638;
 }
 
-.paynexus-filters {
-    margin: 15px 0;
+/* Stats grid */
+.pnx-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+    max-width: 900px;
 }
 
-.paynexus-filters form {
+.pnx-stat-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s;
+}
+
+.pnx-stat-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.pnx-stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.pnx-stat-icon .dashicons {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+}
+
+.pnx-stat-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.pnx-stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1d2327;
+    line-height: 1.2;
+}
+
+.pnx-stat-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+}
+
+/* Toolbar */
+.pnx-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+}
+
+.pnx-toolbar__form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pnx-toolbar__select {
+    min-width: 130px;
+}
+
+.pnx-toolbar__search {
+    min-width: 240px;
+    padding: 6px 12px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+}
+
+.pnx-toolbar__export {
+    margin-left: auto;
+}
+
+/* Payments table */
+.pnx-payments-table {
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.pnx-amount--success {
+    color: #2e7d32;
+    font-weight: 600;
+}
+
+.pnx-amount--failed {
+    color: #c5221f;
+    text-decoration: line-through;
+    opacity: 0.7;
 }
 
 /* Status badges */
 .paynexus-status {
     display: inline-block;
     padding: 3px 10px;
-    border-radius: 3px;
-    font-size: 12px;
+    border-radius: 12px;
+    font-size: 11px;
     font-weight: 600;
     line-height: 1.5;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .paynexus-status-pending {
-    background: #fcf0e3;
-    color: #9a6700;
+    background: #fff3e0;
+    color: #e65100;
 }
 
 .paynexus-status-completed {
-    background: #e6f4ea;
-    color: #1e7e34;
+    background: #e8f5e9;
+    color: #2e7d32;
 }
 
 .paynexus-status-failed {
@@ -85,6 +212,6 @@
 }
 
 .paynexus-status-timeout {
-    background: #f1f1f1;
+    background: #f5f5f5;
     color: #616161;
 }

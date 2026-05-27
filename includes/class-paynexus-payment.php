@@ -153,6 +153,7 @@ class PayNexus_Payment {
      *     @type int    $page     Page number. Default 1.
      *     @type string $orderby  Column to order by. Default 'created_at'.
      *     @type string $order    ASC or DESC. Default 'DESC'.
+     *     @type string $search   Search by phone, reference, or transaction_id.
      * }
      * @return array { items: object[], total: int }
      */
@@ -167,6 +168,7 @@ class PayNexus_Payment {
             'page'     => 1,
             'orderby'  => 'created_at',
             'order'    => 'DESC',
+            'search'   => '',
         );
 
         $args     = wp_parse_args( $args, $defaults );
@@ -176,6 +178,15 @@ class PayNexus_Payment {
         if ( ! empty( $args['status'] ) ) {
             $where   .= ' AND status = %s';
             $values[] = $args['status'];
+        }
+
+        if ( ! empty( $args['search'] ) ) {
+            $search   = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+            $where   .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
+            $values[] = $search;
+            $values[] = $search;
+            $values[] = $search;
+            $values[] = $search;
         }
 
         $allowed_cols = array( 'id', 'amount', 'status', 'created_at', 'updated_at' );
@@ -210,6 +221,44 @@ class PayNexus_Payment {
             'items' => $items,
             'total' => $total,
         );
+    }
+
+    /**
+     * Get summary statistics for the payments dashboard.
+     */
+    public static function get_stats() {
+        global $wpdb;
+
+        $table = self::table_name();
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $rows = $wpdb->get_results(
+            "SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM {$table} GROUP BY status"
+        );
+
+        $stats = array(
+            'total_count'     => 0,
+            'total_revenue'   => 0,
+            'completed_count' => 0,
+            'completed_sum'   => 0,
+            'pending_count'   => 0,
+            'failed_count'    => 0,
+        );
+
+        foreach ( $rows as $row ) {
+            $stats['total_count'] += (int) $row->cnt;
+            if ( 'completed' === $row->status ) {
+                $stats['completed_count'] = (int) $row->cnt;
+                $stats['completed_sum']   = (float) $row->total;
+                $stats['total_revenue']   = (float) $row->total;
+            } elseif ( 'pending' === $row->status ) {
+                $stats['pending_count'] = (int) $row->cnt;
+            } elseif ( 'failed' === $row->status ) {
+                $stats['failed_count'] = (int) $row->cnt;
+            }
+        }
+
+        return $stats;
     }
 
     /**

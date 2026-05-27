@@ -194,8 +194,20 @@ class PayNexus_Admin {
         ?>
         <div class="wrap paynexus-admin">
             <h1>
-                <span class="dashicons dashicons-money-alt" style="font-size:30px;margin-right:8px;vertical-align:middle;"></span>
+                <img src="<?php echo esc_url( PAYNEXUS_PLUGIN_URL . 'assets/images/logo.png' ); ?>" alt="PayNexus" style="max-height:32px;vertical-align:middle;margin-right:8px;" />
                 <?php esc_html_e( 'PayNexus Settings', 'paynexus' ); ?>
+                <?php
+                $sk = paynexus()->get_option( 'secret_key', '' );
+                if ( $sk ) {
+                    $prefix = substr( $sk, 0, 3 );
+                    $is_test = ( 'tk_' === $prefix );
+                    printf(
+                        '<span class="pnx-env-badge pnx-env-badge--%s">%s</span>',
+                        $is_test ? 'test' : 'live',
+                        $is_test ? esc_html__( 'Test Mode', 'paynexus' ) : esc_html__( 'Live', 'paynexus' )
+                    );
+                }
+                ?>
             </h1>
 
             <?php settings_errors(); ?>
@@ -276,11 +288,15 @@ class PayNexus_Admin {
         $per_page = 20;
         $page     = max( 1, intval( $_GET['paged'] ?? 1 ) );
         $status   = sanitize_text_field( $_GET['status'] ?? '' );
+        $search   = sanitize_text_field( $_GET['s'] ?? '' );
+        $stats    = PayNexus_Payment::get_stats();
+        $currency = paynexus()->get_option( 'currency', 'KES' );
 
         $result = PayNexus_Payment::list_payments( array(
             'status'   => $status,
             'per_page' => $per_page,
             'page'     => $page,
+            'search'   => $search,
         ) );
 
         $items = $result['items'];
@@ -289,54 +305,119 @@ class PayNexus_Admin {
         ?>
         <div class="wrap paynexus-admin">
             <h1>
-                <span class="dashicons dashicons-money-alt" style="font-size:30px;margin-right:8px;vertical-align:middle;"></span>
+                <img src="<?php echo esc_url( PAYNEXUS_PLUGIN_URL . 'assets/images/logo.png' ); ?>" alt="PayNexus" style="max-height:32px;vertical-align:middle;margin-right:8px;" />
                 <?php esc_html_e( 'PayNexus Payments', 'paynexus' ); ?>
             </h1>
 
-            <div class="paynexus-filters">
-                <form method="get">
+            <div class="pnx-stats-grid">
+                <div class="pnx-stat-card">
+                    <span class="pnx-stat-icon" style="background:#e3f2fd;color:#1565c0;">
+                        <span class="dashicons dashicons-chart-bar"></span>
+                    </span>
+                    <div class="pnx-stat-body">
+                        <span class="pnx-stat-value"><?php echo esc_html( $stats['total_count'] ); ?></span>
+                        <span class="pnx-stat-label"><?php esc_html_e( 'Total Payments', 'paynexus' ); ?></span>
+                    </div>
+                </div>
+                <div class="pnx-stat-card">
+                    <span class="pnx-stat-icon" style="background:#e8f5e9;color:#2e7d32;">
+                        <span class="dashicons dashicons-yes-alt"></span>
+                    </span>
+                    <div class="pnx-stat-body">
+                        <span class="pnx-stat-value"><?php echo esc_html( $stats['completed_count'] ); ?></span>
+                        <span class="pnx-stat-label"><?php esc_html_e( 'Completed', 'paynexus' ); ?></span>
+                    </div>
+                </div>
+                <div class="pnx-stat-card">
+                    <span class="pnx-stat-icon" style="background:#fff3e0;color:#e65100;">
+                        <span class="dashicons dashicons-clock"></span>
+                    </span>
+                    <div class="pnx-stat-body">
+                        <span class="pnx-stat-value"><?php echo esc_html( $stats['pending_count'] ); ?></span>
+                        <span class="pnx-stat-label"><?php esc_html_e( 'Pending', 'paynexus' ); ?></span>
+                    </div>
+                </div>
+                <div class="pnx-stat-card">
+                    <span class="pnx-stat-icon" style="background:#e8f5e9;color:#1b5e20;">
+                        <span class="dashicons dashicons-money-alt"></span>
+                    </span>
+                    <div class="pnx-stat-body">
+                        <span class="pnx-stat-value"><?php echo esc_html( $currency . ' ' . number_format( $stats['total_revenue'], 2 ) ); ?></span>
+                        <span class="pnx-stat-label"><?php esc_html_e( 'Revenue', 'paynexus' ); ?></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pnx-toolbar">
+                <form method="get" class="pnx-toolbar__form">
                     <input type="hidden" name="page" value="paynexus-payments" />
-                    <select name="status">
+                    <select name="status" class="pnx-toolbar__select">
                         <option value=""><?php esc_html_e( 'All statuses', 'paynexus' ); ?></option>
                         <?php foreach ( array( 'pending', 'completed', 'failed', 'timeout' ) as $s ) : ?>
                             <option value="<?php echo esc_attr( $s ); ?>" <?php selected( $status, $s ); ?>><?php echo esc_html( ucfirst( $s ) ); ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <input type="search" name="s" value="<?php echo esc_attr( $search ); ?>"
+                           placeholder="<?php esc_attr_e( 'Search phone, reference, txn ID...', 'paynexus' ); ?>"
+                           class="pnx-toolbar__search" />
                     <?php submit_button( __( 'Filter', 'paynexus' ), 'secondary', 'filter', false ); ?>
                 </form>
+                <?php if ( ! empty( $items ) ) : ?>
+                    <a href="<?php echo esc_url( add_query_arg( array( 'page' => 'paynexus-payments', 'export' => 'csv', 'status' => $status, 's' => $search ), admin_url( 'admin.php' ) ) ); ?>" class="button pnx-toolbar__export">
+                        <span class="dashicons dashicons-download" style="vertical-align:middle;margin-right:2px;"></span>
+                        <?php esc_html_e( 'Export CSV', 'paynexus' ); ?>
+                    </a>
+                <?php endif; ?>
             </div>
 
-            <table class="wp-list-table widefat fixed striped">
+            <table class="wp-list-table widefat fixed striped pnx-payments-table">
                 <thead>
                     <tr>
-                        <th><?php esc_html_e( 'ID', 'paynexus' ); ?></th>
+                        <th style="width:40px;"><?php esc_html_e( 'ID', 'paynexus' ); ?></th>
                         <th><?php esc_html_e( 'Reference', 'paynexus' ); ?></th>
                         <th><?php esc_html_e( 'Amount', 'paynexus' ); ?></th>
                         <th><?php esc_html_e( 'Phone', 'paynexus' ); ?></th>
                         <th><?php esc_html_e( 'Status', 'paynexus' ); ?></th>
                         <th><?php esc_html_e( 'Transaction ID', 'paynexus' ); ?></th>
                         <th><?php esc_html_e( 'Payer', 'paynexus' ); ?></th>
+                        <th><?php esc_html_e( 'Order', 'paynexus' ); ?></th>
                         <th><?php esc_html_e( 'Date', 'paynexus' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ( empty( $items ) ) : ?>
-                        <tr><td colspan="8"><?php esc_html_e( 'No payments found.', 'paynexus' ); ?></td></tr>
+                        <tr><td colspan="9" style="text-align:center;padding:40px 20px;color:#888;">
+                            <span class="dashicons dashicons-search" style="font-size:32px;display:block;margin:0 auto 8px;color:#ccc;"></span>
+                            <?php esc_html_e( 'No payments found.', 'paynexus' ); ?>
+                        </td></tr>
                     <?php else : ?>
-                        <?php foreach ( $items as $item ) : ?>
+                        <?php foreach ( $items as $item ) :
+                            $amount_class = 'completed' === $item->status ? 'pnx-amount--success' : ( 'failed' === $item->status ? 'pnx-amount--failed' : '' );
+                        ?>
                             <tr>
                                 <td><?php echo esc_html( $item->id ); ?></td>
-                                <td><code><?php echo esc_html( $item->reference ); ?></code></td>
-                                <td><?php echo esc_html( $item->currency . ' ' . number_format( (float) $item->amount, 2 ) ); ?></td>
+                                <td><code style="font-size:12px;"><?php echo esc_html( $item->reference ); ?></code></td>
+                                <td class="<?php echo esc_attr( $amount_class ); ?>"><?php echo esc_html( ( $item->currency ?? 'KES' ) . ' ' . number_format( (float) $item->amount, 2 ) ); ?></td>
                                 <td><?php echo esc_html( $item->phone ); ?></td>
                                 <td>
                                     <span class="paynexus-status paynexus-status-<?php echo esc_attr( $item->status ); ?>">
                                         <?php echo esc_html( ucfirst( $item->status ) ); ?>
                                     </span>
                                 </td>
-                                <td><?php echo esc_html( $item->transaction_id ?? '—' ); ?></td>
+                                <td><?php if ( ! empty( $item->transaction_id ) ) : ?>
+                                    <code style="font-size:12px;"><?php echo esc_html( $item->transaction_id ); ?></code>
+                                <?php else : ?>
+                                    <span style="color:#ccc;">—</span>
+                                <?php endif; ?></td>
                                 <td><?php echo esc_html( $item->payer_name ?? '—' ); ?></td>
-                                <td><?php echo esc_html( $item->created_at ); ?></td>
+                                <td><?php if ( ! empty( $item->order_id ) ) : ?>
+                                    <a href="<?php echo esc_url( admin_url( 'post.php?post=' . intval( $item->order_id ) . '&action=edit' ) ); ?>" title="<?php esc_attr_e( 'View Order', 'paynexus' ); ?>">
+                                        #<?php echo esc_html( $item->order_id ); ?>
+                                    </a>
+                                <?php else : ?>
+                                    <span style="color:#ccc;">—</span>
+                                <?php endif; ?></td>
+                                <td style="font-size:12px;color:#666;"><?php echo esc_html( $item->created_at ); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>

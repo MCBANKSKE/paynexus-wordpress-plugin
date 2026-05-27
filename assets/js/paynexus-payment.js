@@ -12,6 +12,23 @@
     //  Payment Form (shortcode)
     // -----------------------------------------------------------------
 
+    // Show payment summary before submit.
+    $(document).on('input change', '#paynexus-amount, #paynexus-phone', function () {
+        var $form    = $(this).closest('[data-paynexus-form]');
+        var amount   = $form.find('[name="amount"]').val();
+        var phone    = $form.find('[name="phone"]').val();
+        var $summary = $form.find('#pnx-payment-summary');
+
+        if (amount && parseFloat(amount) > 0 && phone && phone.length >= 9) {
+            var currency = params.currency || 'KES';
+            $form.find('#pnx-summary-amount').text(currency + ' ' + parseFloat(amount).toLocaleString());
+            $form.find('#pnx-summary-phone').text(phone);
+            $summary.slideDown(200);
+        } else {
+            $summary.slideUp(200);
+        }
+    });
+
     $(document).on('submit', '[data-paynexus-form]', function (e) {
         e.preventDefault();
 
@@ -86,19 +103,44 @@
             success: function (res) {
                 if (res.success) {
                     var d = res.data || {};
-                    var html = '<p><strong>Reference:</strong> ' + escHtml(d.reference || ref) + '</p>'
-                             + '<p><strong>Status:</strong> ' + escHtml(d.status || 'unknown') + '</p>'
-                             + '<p><strong>Amount:</strong> ' + escHtml((d.currency || 'KES') + ' ' + (d.amount || '0')) + '</p>';
-                    if (d.transaction_id) {
-                        html += '<p><strong>Transaction ID:</strong> ' + escHtml(d.transaction_id) + '</p>';
+                    var statusClass = d.status === 'completed' ? 'pnx-receipt--success' : (d.status === 'failed' ? 'pnx-receipt--failed' : 'pnx-receipt--pending');
+                    var statusIcon = d.status === 'completed' ? '&#10003;' : (d.status === 'failed' ? '&#10007;' : '&#9679;');
+                    var html = '<div class="pnx-receipt__header ' + statusClass + '">'
+                             + '<span class="pnx-receipt__icon">' + statusIcon + '</span>'
+                             + '<span class="pnx-receipt__status">' + escHtml((d.status || 'unknown').toUpperCase()) + '</span>'
+                             + '</div>'
+                             + '<div class="pnx-receipt__body">'
+                             + '<div class="pnx-receipt__row">'
+                             + '<span class="pnx-receipt__label">Reference</span>'
+                             + '<span class="pnx-receipt__value"><code>' + escHtml(d.reference || ref) + '</code>'
+                             + '<button type="button" class="pnx-copy-btn" data-copy="' + escHtml(d.reference || ref) + '" title="Copy">&#128203;</button></span>'
+                             + '</div>'
+                             + '<div class="pnx-receipt__row">'
+                             + '<span class="pnx-receipt__label">Amount</span>'
+                             + '<span class="pnx-receipt__value">' + escHtml((d.currency || 'KES') + ' ' + parseFloat(d.amount || 0).toLocaleString()) + '</span>'
+                             + '</div>';
+                    if (d.transaction_id || d.provider_transaction_id) {
+                        var txnId = d.provider_transaction_id || d.transaction_id;
+                        html += '<div class="pnx-receipt__row">'
+                              + '<span class="pnx-receipt__label">Transaction ID</span>'
+                              + '<span class="pnx-receipt__value"><code>' + escHtml(txnId) + '</code>'
+                              + '<button type="button" class="pnx-copy-btn" data-copy="' + escHtml(txnId) + '" title="Copy">&#128203;</button></span>'
+                              + '</div>';
                     }
-                    $result.addClass('success').html(html);
+                    if (d.phone) {
+                        html += '<div class="pnx-receipt__row">'
+                              + '<span class="pnx-receipt__label">Phone</span>'
+                              + '<span class="pnx-receipt__value">' + escHtml(d.phone) + '</span>'
+                              + '</div>';
+                    }
+                    html += '</div>';
+                    $result.removeClass('success error').addClass(statusClass).html(html).show();
                 } else {
-                    $result.addClass('error').html('<p>' + escHtml((res.data && res.data.message) || 'Not found.') + '</p>');
+                    $result.removeClass('success').addClass('error').html('<p style="padding:16px;text-align:center;">' + escHtml((res.data && res.data.message) || 'Not found.') + '</p>').show();
                 }
             },
             error: function () {
-                $result.addClass('error').html('<p>An error occurred.</p>');
+                $result.removeClass('success').addClass('error').html('<p style="padding:16px;text-align:center;">An error occurred.</p>').show();
             }
         });
     });
@@ -226,5 +268,17 @@
         div.appendChild(document.createTextNode(str));
         return div.innerHTML;
     }
+
+    // Copy-to-clipboard handler for receipt copy buttons.
+    $(document).on('click', '.pnx-copy-btn', function () {
+        var text = $(this).data('copy');
+        var $btn = $(this);
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function () {
+                $btn.html('&#10003;').addClass('pnx-copy-btn--done');
+                setTimeout(function () { $btn.html('&#128203;').removeClass('pnx-copy-btn--done'); }, 1500);
+            });
+        }
+    });
 
 })(jQuery);

@@ -173,7 +173,9 @@ class PayNexus_Client {
      * Get payment status by PayNexus reference.
      */
     public function get_payment_by_reference( $reference ) {
-        return $this->get( '/api/payments/' . urlencode( $reference ) );
+        $result = $this->request( 'GET', '/api/payments/' . urlencode( $reference ) );
+        $this->sync_local_record( $result );
+        return $result;
     }
 
     /**
@@ -187,7 +189,7 @@ class PayNexus_Client {
      * Get payment status by checkout request ID.
      */
     public function get_payment_by_checkout_id( $checkout_request_id ) {
-        $result = $this->post_read( '/api/payments/status-by-checkout-id', array(
+        $result = $this->post( '/api/payments/status-by-checkout-id', array(
             'checkout_request_id' => $checkout_request_id,
         ) );
         $this->sync_local_record( $result );
@@ -198,7 +200,7 @@ class PayNexus_Client {
      * Query real-time M-Pesa transaction status via PayNexus.
      */
     public function check_mpesa_status( $checkout_request_id ) {
-        $result = $this->post_read( '/api/mpesa/payment/status', array(
+        $result = $this->post( '/api/mpesa/payment/status', array(
             'checkout_request_id' => $checkout_request_id,
         ) );
         $this->sync_local_record( $result );
@@ -342,7 +344,7 @@ class PayNexus_Client {
     /**
      * Sync a local payment record with the API response.
      */
-    private function sync_local_record( $result ) {
+    public function sync_local_record( $result ) {
         if ( empty( $result['success'] ) ) {
             return;
         }
