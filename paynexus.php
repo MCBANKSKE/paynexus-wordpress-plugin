@@ -8,8 +8,7 @@
  * Author URI:        https://paynexus.co.ke
  * License:           MIT
  * License URI:       https://opensource.org/licenses/MIT
- * Text Domain:       paynexus
- * Domain Path:       /languages
+ * Text Domain:       paynexus-payment-gateway
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * WC requires at least: 6.0
