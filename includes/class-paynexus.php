@@ -189,6 +189,9 @@ final class PayNexus {
 
     /**
      * AJAX: check payment status.
+     *
+     * Queries the PayNexus API for real-time M-Pesa transaction status
+     * and updates the WooCommerce order when the payment completes or fails.
      */
     public function ajax_check_status() {
         check_ajax_referer( 'paynexus_payment', 'nonce' );
@@ -200,16 +203,68 @@ final class PayNexus {
             wp_send_json_error( array( 'message' => __( 'A checkout request ID or reference is required.', 'paynexus' ) ) );
         }
 
+        // Query real-time M-Pesa status from Safaricom via PayNexus API.
+        $result = array( 'success' => false );
         if ( ! empty( $checkout_request_id ) ) {
-            $result = $this->client->get_payment_by_checkout_id( $checkout_request_id );
-        } else {
+            $result = $this->client->check_mpesa_status( $checkout_request_id );
+        }
+
+        // Fall back to database lookup by reference if real-time check is unavailable.
+        if ( empty( $result['success'] ) && ! empty( $reference ) ) {
             $result = $this->client->get_payment_by_reference( $reference );
         }
 
-        if ( ! empty( $result['success'] ) ) {
-            wp_send_json_success( $result['data'] ?? $result );
-        } else {
+        if ( empty( $result['success'] ) ) {
             wp_send_json_error( array( 'message' => $result['message'] ?? __( 'Status check failed.', 'paynexus' ) ) );
+        }
+
+        $data   = $result['data'] ?? $result;
+        $status = $data['status'] ?? '';
+
+        // Update WooCommerce order when payment reaches a final state.
+        if ( in_array( $status, array( 'completed', 'failed' ), true ) && function_exists( 'wc_get_order' ) ) {
+            $this->sync_woo_order_status( $checkout_request_id, $reference, $data, $status );
+        }
+
+        wp_send_json_success( $data );
+    }
+
+    /**
+     * Update the WooCommerce order linked to a payment.
+     */
+    private function sync_woo_order_status( $checkout_request_id, $reference, $data, $status ) {
+        $local = null;
+        if ( $checkout_request_id ) {
+            $local = PayNexus_Payment::find_by( 'checkout_request_id', $checkout_request_id );
+        }
+        if ( ! $local && $reference ) {
+            $local = PayNexus_Payment::find_by( 'reference', $reference );
+        }
+        if ( ! $local || empty( $local->order_id ) ) {
+            return;
+        }
+
+        $order = wc_get_order( $local->order_id );
+        if ( ! $order || $order->is_paid() ) {
+            return;
+        }
+
+        if ( 'completed' === $status ) {
+            $txn_id = $data['provider_transaction_id'] ?? $data['transaction_id'] ?? '';
+            $order->payment_complete( $txn_id );
+            $order->add_order_note(
+                sprintf(
+                    __( 'PayNexus payment completed (via status poll). Ref: %1$s | Txn: %2$s', 'paynexus' ),
+                    $data['reference'] ?? $reference,
+                    $txn_id
+                )
+            );
+        } elseif ( 'failed' === $status ) {
+            $reason = $data['failure_reason'] ?? $data['result_description'] ?? __( 'Payment failed.', 'paynexus' );
+            $order->update_status( 'failed', sprintf(
+                __( 'PayNexus payment failed (via status poll): %s', 'paynexus' ),
+                $reason
+            ) );
         }
     }
 
