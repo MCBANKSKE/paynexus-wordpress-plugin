@@ -391,7 +391,7 @@ class PayNexus_Client {
 
         $failure_reason = $data['failure_reason'] ?? null;
         if ( $failure_reason && empty( $local->failure_reason ) ) {
-            $updates['failure_reason'] = $failure_reason;
+            $updates['failure_reason'] = $this->map_failure_reason( $failure_reason );
         }
 
         $pnx_id = $data['id'] ?? $data['payment_id'] ?? null;
@@ -505,6 +505,75 @@ class PayNexus_Client {
         }
 
         return $body;
+    }
+
+    /**
+     * Map failure reasons to consistent user-friendly messages.
+     *
+     * @param string $failure_reason Original failure reason from API
+     * @return string Normalized failure reason
+     */
+    public function map_failure_reason( $failure_reason ) {
+        if ( empty( $failure_reason ) ) {
+            return $failure_reason;
+        }
+
+        // Normalize common timeout and connectivity issues
+        $timeout_patterns = array(
+            'DS timeout user cannot be reached',
+            'timeout user cannot be reached',
+            'user cannot be reached',
+            'DS timeout',
+            'timeout',
+            'No response from user',
+            'Request timed out',
+            'User not reachable',
+            'User unreachable',
+        );
+
+        // Normalize insufficient funds messages
+        $insufficient_funds_patterns = array(
+            'Insufficient funds',
+            'insufficient funds',
+            'Insufficient balance',
+            'insufficient balance',
+            'Low balance',
+            'low balance',
+        );
+
+        // Normalize user cancellation
+        $cancellation_patterns = array(
+            'Request Cancelled by user',
+            'Cancelled by user',
+            'User cancelled',
+            'User canceled',
+        );
+
+        $lower_reason = strtolower( $failure_reason );
+
+        // Check for timeout patterns
+        foreach ( $timeout_patterns as $pattern ) {
+            if ( strpos( $lower_reason, strtolower( $pattern ) ) !== false ) {
+                return 'DS timeout user cannot be reached';
+            }
+        }
+
+        // Check for insufficient funds patterns
+        foreach ( $insufficient_funds_patterns as $pattern ) {
+            if ( strpos( $lower_reason, strtolower( $pattern ) ) !== false ) {
+                return 'Insufficient funds';
+            }
+        }
+
+        // Check for cancellation patterns
+        foreach ( $cancellation_patterns as $pattern ) {
+            if ( strpos( $lower_reason, strtolower( $pattern ) ) !== false ) {
+                return 'Request Cancelled by user';
+            }
+        }
+
+        // Return original if no pattern matches
+        return $failure_reason;
     }
 
     /**

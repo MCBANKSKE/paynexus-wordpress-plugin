@@ -219,6 +219,18 @@ final class PayNexus {
         $data   = $result['data'] ?? $result;
         $status = $data['status'] ?? '';
 
+        // Apply failure reason mapping for consistent user experience
+        if ( 'failed' === $status ) {
+            $failure_reason = $data['failure_reason'] ?? $data['result_description'] ?? '';
+            if ( $failure_reason ) {
+                $mapped_reason = $this->client->map_failure_reason( $failure_reason );
+                if ( $mapped_reason !== $failure_reason ) {
+                    $data['failure_reason'] = $mapped_reason;
+                    $data['result_description'] = $mapped_reason;
+                }
+            }
+        }
+
         // Ensure the local payment record is synced with the API response.
         $this->client->sync_local_record( $result );
 

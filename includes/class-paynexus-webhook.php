@@ -114,6 +114,14 @@ class PayNexus_Webhook {
 
         if ( ! $local ) {
             // Create a record for webhooks that arrive before local record exists.
+            $failure_reason = $data['failure_reason'] ?? null;
+            if ( $failure_reason ) {
+                $client = paynexus()->client;
+                if ( $client && method_exists( $client, 'map_failure_reason' ) ) {
+                    $failure_reason = $client->map_failure_reason( $failure_reason );
+                }
+            }
+
             $insert_id = PayNexus_Payment::insert_payment( array(
                 'paynexus_payment_id' => $payment_id,
                 'reference'           => $reference,
@@ -124,7 +132,7 @@ class PayNexus_Webhook {
                 'phone'               => $data['phone'] ?? null,
                 'status'              => self::resolve_status( $event ),
                 'provider_reference'  => $data['provider_reference'] ?? null,
-                'failure_reason'      => $data['failure_reason'] ?? null,
+                'failure_reason'      => $failure_reason,
                 'payer_name'          => $data['payer_name'] ?? null,
                 'account_reference'   => $data['account_reference'] ?? null,
             ) );
@@ -193,6 +201,14 @@ class PayNexus_Webhook {
             ?? $data['reason']
             ?? $data['provider_reference']
             ?? 'Unknown';
+
+        // Apply failure reason mapping for consistent user experience
+        if ( $reason && $reason !== 'Unknown' ) {
+            $client = paynexus()->client;
+            if ( $client && method_exists( $client, 'map_failure_reason' ) ) {
+                $reason = $client->map_failure_reason( $reason );
+            }
+        }
 
         PayNexus_Payment::update_payment( $payment->id, array(
             'status'         => 'failed',
