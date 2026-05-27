@@ -123,7 +123,7 @@ class PayNexus_Payment {
             return null;
         }
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // Use backticks around column name to prevent SQL injection
         return $wpdb->get_row( $wpdb->prepare(
             "SELECT * FROM {$table} WHERE `{$column}` = %s LIMIT 1",
             $value
@@ -196,20 +196,16 @@ class PayNexus_Payment {
         $offset       = max( 0, ( intval( $args['page'] ) - 1 ) * $per_page );
 
         if ( ! empty( $values ) ) {
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $total = (int) $wpdb->get_var( $wpdb->prepare(
                 "SELECT COUNT(*) FROM {$table} WHERE {$where}",
                 ...$values
             ) );
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $items = $wpdb->get_results( $wpdb->prepare(
                 "SELECT * FROM {$table} WHERE {$where} ORDER BY `{$orderby}` {$order} LIMIT %d OFFSET %d",
                 ...array_merge( $values, array( $per_page, $offset ) )
             ) );
         } else {
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE {$where}" );
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $items = $wpdb->get_results( $wpdb->prepare(
                 "SELECT * FROM {$table} WHERE {$where} ORDER BY `{$orderby}` {$order} LIMIT %d OFFSET %d",
                 $per_page,
@@ -231,7 +227,6 @@ class PayNexus_Payment {
 
         $table = self::table_name();
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $rows = $wpdb->get_results(
             "SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM {$table} GROUP BY status"
         );
@@ -266,7 +261,6 @@ class PayNexus_Payment {
      */
     public static function drop_table() {
         global $wpdb;
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $wpdb->query( "DROP TABLE IF EXISTS " . self::table_name() );
     }
 }

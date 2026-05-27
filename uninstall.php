@@ -13,6 +13,5 @@ delete_option( 'paynexus_settings' );
 
 // Drop payments table.
 global $wpdb;
-$table = $wpdb->prefix . 'paynexus_payments';
-// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-$wpdb->query( "DROP TABLE IF EXISTS {$table}" );
+$paynexus_table = $wpdb->prefix . 'paynexus_payments';
+$wpdb->query( "DROP TABLE IF EXISTS {$paynexus_table}" );

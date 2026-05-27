@@ -41,7 +41,7 @@ class PayNexus_Webhook {
         if ( empty( $signature ) ) {
             return new WP_Error(
                 'paynexus_missing_signature',
-                __( 'Missing webhook signature.', 'paynexus' ),
+                __( 'Missing webhook signature.', 'paynexus-payment-gateway' ),
                 array( 'status' => 403 )
             );
         }
@@ -52,7 +52,7 @@ class PayNexus_Webhook {
         if ( ! hash_equals( $expected, $signature ) ) {
             return new WP_Error(
                 'paynexus_invalid_signature',
-                __( 'Invalid webhook signature.', 'paynexus' ),
+                __( 'Invalid webhook signature.', 'paynexus-payment-gateway' ),
                 array( 'status' => 403 )
             );
         }
@@ -64,7 +64,7 @@ class PayNexus_Webhook {
             if ( abs( time() - intval( $timestamp ) ) > $tolerance ) {
                 return new WP_Error(
                     'paynexus_expired_webhook',
-                    __( 'Webhook timestamp outside tolerance window.', 'paynexus' ),
+                    __( 'Webhook timestamp outside tolerance window.', 'paynexus-payment-gateway' ),
                     array( 'status' => 403 )
                 );
             }
@@ -179,7 +179,7 @@ class PayNexus_Webhook {
                 $order->add_order_note(
                     sprintf(
                         /* translators: 1: reference, 2: transaction ID */
-                        __( 'PayNexus payment completed. Ref: %1$s | Txn: %2$s', 'paynexus' ),
+                        __( 'PayNexus payment completed. Ref: %1$s | Txn: %2$s', 'paynexus-payment-gateway' ),
                         $data['reference'] ?? '',
                         $txn_id
                     )
@@ -216,7 +216,7 @@ class PayNexus_Webhook {
             if ( $order && ! $order->is_paid() ) {
                 $order->update_status( 'failed', sprintf(
                     /* translators: %s: failure reason */
-                    __( 'PayNexus payment failed: %s', 'paynexus' ),
+                    __( 'PayNexus payment failed: %s', 'paynexus-payment-gateway' ),
                     $reason
                 ) );
             }

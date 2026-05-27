@@ -53,8 +53,8 @@ final class PayNexus_WooCommerce_Blocks extends AbstractPaymentMethodType {
      */
     public function get_payment_method_data() {
         return array(
-            'title'       => $this->get_setting( 'title', __( 'M-Pesa (PayNexus)', 'paynexus' ) ),
-            'description' => $this->get_setting( 'description', __( 'Pay securely with M-Pesa. You will receive a payment prompt on your phone.', 'paynexus' ) ),
+            'title'       => $this->get_setting( 'title', __( 'M-Pesa (PayNexus)', 'paynexus-payment-gateway' ) ),
+            'description' => $this->get_setting( 'description', __( 'Pay securely with M-Pesa. You will receive a payment prompt on your phone.', 'paynexus-payment-gateway' ) ),
             'supports'    => array( 'products' ),
             'icon'        => PAYNEXUS_PLUGIN_URL . 'assets/images/mpesa-logo.png',
         );

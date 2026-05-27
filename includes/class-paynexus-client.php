@@ -511,8 +511,7 @@ class PayNexus_Client {
      * Log a message to the PayNexus log file.
      */
     private function log( $level, $message ) {
-        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-            error_log( "[PayNexus] [{$level}] {$message}" );
-        }
+        // Debug logging disabled for production
+        // Consider using WordPress built-in logging functions if needed
     }
 }

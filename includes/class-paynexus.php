@@ -144,12 +144,12 @@ final class PayNexus {
             'poll_timeout'   => absint( $this->get_option( 'poll_timeout', 120 ) ) * 1000,
             'currency'       => $this->get_option( 'currency', 'KES' ),
             'i18n'           => array(
-                'processing'   => __( 'Processing payment...', 'paynexus' ),
-                'waiting'      => __( 'Waiting for M-Pesa confirmation...', 'paynexus' ),
-                'completed'    => __( 'Payment completed successfully!', 'paynexus' ),
-                'failed'       => __( 'Payment failed. Please try again.', 'paynexus' ),
-                'timeout'      => __( 'Payment timed out. Please try again.', 'paynexus' ),
-                'error'        => __( 'An error occurred. Please try again.', 'paynexus' ),
+                'processing'   => __( 'Processing payment...', 'paynexus-payment-gateway' ),
+                'waiting'      => __( 'Waiting for M-Pesa confirmation...', 'paynexus-payment-gateway' ),
+                'completed'    => __( 'Payment completed successfully!', 'paynexus-payment-gateway' ),
+                'failed'       => __( 'Payment failed. Please try again.', 'paynexus-payment-gateway' ),
+                'timeout'      => __( 'Payment timed out. Please try again.', 'paynexus-payment-gateway' ),
+                'error'        => __( 'An error occurred. Please try again.', 'paynexus-payment-gateway' ),
             ),
         ) );
     }
@@ -164,7 +164,7 @@ final class PayNexus {
         $amount = floatval( $_POST['amount'] ?? 0 );
 
         if ( empty( $phone ) || $amount <= 0 ) {
-            wp_send_json_error( array( 'message' => __( 'Phone number and amount are required.', 'paynexus' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Phone number and amount are required.', 'paynexus-payment-gateway' ) ) );
         }
 
         $data = array(
@@ -183,7 +183,7 @@ final class PayNexus {
         if ( ! empty( $result['success'] ) ) {
             wp_send_json_success( $result['data'] ?? $result );
         } else {
-            wp_send_json_error( array( 'message' => $result['message'] ?? __( 'Payment initiation failed.', 'paynexus' ) ) );
+            wp_send_json_error( array( 'message' => $result['message'] ?? __( 'Payment initiation failed.', 'paynexus-payment-gateway' ) ) );
         }
     }
 
@@ -200,7 +200,7 @@ final class PayNexus {
         $reference           = sanitize_text_field( wp_unslash( $_POST['reference'] ?? '' ) );
 
         if ( empty( $checkout_request_id ) && empty( $reference ) ) {
-            wp_send_json_error( array( 'message' => __( 'A checkout request ID or reference is required.', 'paynexus' ) ) );
+            wp_send_json_error( array( 'message' => __( 'A checkout request ID or reference is required.', 'paynexus-payment-gateway' ) ) );
         }
 
         // Query the PayNexus server database for payment status.
@@ -213,7 +213,7 @@ final class PayNexus {
         }
 
         if ( empty( $result['success'] ) ) {
-            wp_send_json_error( array( 'message' => $result['message'] ?? __( 'Status check failed.', 'paynexus' ) ) );
+            wp_send_json_error( array( 'message' => $result['message'] ?? __( 'Status check failed.', 'paynexus-payment-gateway' ) ) );
         }
 
         $data   = $result['data'] ?? $result;
@@ -255,15 +255,17 @@ final class PayNexus {
             $order->payment_complete( $txn_id );
             $order->add_order_note(
                 sprintf(
-                    __( 'PayNexus payment completed (via status poll). Ref: %1$s | Txn: %2$s', 'paynexus' ),
+                    /* translators: 1: payment reference, 2: transaction ID */
+                    __( 'PayNexus payment completed (via status poll). Ref: %1$s | Txn: %2$s', 'paynexus-payment-gateway' ),
                     $data['reference'] ?? $reference,
                     $txn_id
                 )
             );
         } elseif ( 'failed' === $status ) {
-            $reason = $data['failure_reason'] ?? $data['result_description'] ?? __( 'Payment failed.', 'paynexus' );
+            $reason = $data['failure_reason'] ?? $data['result_description'] ?? __( 'Payment failed.', 'paynexus-payment-gateway' );
             $order->update_status( 'failed', sprintf(
-                __( 'PayNexus payment failed (via status poll): %s', 'paynexus' ),
+                /* translators: %s: failure reason */
+                __( 'PayNexus payment failed (via status poll): %s', 'paynexus-payment-gateway' ),
                 $reason
             ) );
         }
@@ -276,7 +278,7 @@ final class PayNexus {
         $settings_link = sprintf(
             '<a href="%s">%s</a>',
             admin_url( 'admin.php?page=paynexus' ),
-            __( 'Settings', 'paynexus' )
+            __( 'Settings', 'paynexus-payment-gateway' )
         );
         array_unshift( $links, $settings_link );
         return $links;

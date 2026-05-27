@@ -21,8 +21,8 @@ class PayNexus_Admin {
 
     public function register_menu() {
         add_menu_page(
-            __( 'PayNexus', 'paynexus' ),
-            __( 'PayNexus', 'paynexus' ),
+            __( 'PayNexus', 'paynexus-payment-gateway' ),
+            __( 'PayNexus', 'paynexus-payment-gateway' ),
             'manage_options',
             'paynexus',
             array( $this, 'render_settings_page' ),
@@ -32,8 +32,8 @@ class PayNexus_Admin {
 
         add_submenu_page(
             'paynexus',
-            __( 'Settings', 'paynexus' ),
-            __( 'Settings', 'paynexus' ),
+            __( 'Settings', 'paynexus-payment-gateway' ),
+            __( 'Settings', 'paynexus-payment-gateway' ),
             'manage_options',
             'paynexus',
             array( $this, 'render_settings_page' )
@@ -41,8 +41,8 @@ class PayNexus_Admin {
 
         add_submenu_page(
             'paynexus',
-            __( 'Payments', 'paynexus' ),
-            __( 'Payments', 'paynexus' ),
+            __( 'Payments', 'paynexus-payment-gateway' ),
+            __( 'Payments', 'paynexus-payment-gateway' ),
             'manage_options',
             'paynexus-payments',
             array( $this, 'render_payments_page' )
@@ -62,51 +62,51 @@ class PayNexus_Admin {
         // API Keys section
         add_settings_section(
             'paynexus_api',
-            __( 'API Keys', 'paynexus' ),
+            __( 'API Keys', 'paynexus-payment-gateway' ),
             function () {
                 printf(
                     '<p>%s <a href="https://paynexus.co.ke/merchant/merchant-api-keys" target="_blank">%s</a></p>',
-                    esc_html__( 'Get your API keys from the PayNexus merchant dashboard:', 'paynexus' ),
-                    esc_html__( 'paynexus.co.ke/merchant/merchant-api-keys', 'paynexus' )
+                    esc_html__( 'Get your API keys from the PayNexus merchant dashboard:', 'paynexus-payment-gateway' ),
+                    esc_html__( 'paynexus.co.ke/merchant/merchant-api-keys', 'paynexus-payment-gateway' )
                 );
             },
             'paynexus'
         );
 
-        $this->add_field( 'secret_key', __( 'Secret Key (sk_)', 'paynexus' ), 'password', 'paynexus_api' );
-        $this->add_field( 'public_key', __( 'Public Key (pk_)', 'paynexus' ), 'password', 'paynexus_api' );
-        $this->add_field( 'base_url', __( 'Base URL', 'paynexus' ), 'url', 'paynexus_api', 'https://paynexus.co.ke' );
+        $this->add_field( 'secret_key', __( 'Secret Key (sk_)', 'paynexus-payment-gateway' ), 'password', 'paynexus_api' );
+        $this->add_field( 'public_key', __( 'Public Key (pk_)', 'paynexus-payment-gateway' ), 'password', 'paynexus_api' );
+        $this->add_field( 'base_url', __( 'Base URL', 'paynexus-payment-gateway' ), 'url', 'paynexus_api', 'https://paynexus.co.ke' );
 
         // Webhook section
         add_settings_section(
             'paynexus_webhook',
-            __( 'Webhook', 'paynexus' ),
+            __( 'Webhook', 'paynexus-payment-gateway' ),
             function () {
                 $webhook_url = rest_url( 'paynexus/v1/webhook' );
                 printf(
                     '<p>%s</p><code>%s</code>',
-                    esc_html__( 'Configure this URL as your webhook endpoint in the PayNexus dashboard:', 'paynexus' ),
+                    esc_html__( 'Configure this URL as your webhook endpoint in the PayNexus dashboard:', 'paynexus-payment-gateway' ),
                     esc_html( $webhook_url )
                 );
             },
             'paynexus'
         );
 
-        $this->add_field( 'webhook_secret', __( 'Webhook Secret', 'paynexus' ), 'password', 'paynexus_webhook' );
+        $this->add_field( 'webhook_secret', __( 'Webhook Secret', 'paynexus-payment-gateway' ), 'password', 'paynexus_webhook' );
 
         // General section
         add_settings_section(
             'paynexus_general',
-            __( 'General Settings', 'paynexus' ),
+            __( 'General Settings', 'paynexus-payment-gateway' ),
             null,
             'paynexus'
         );
 
-        $this->add_field( 'currency', __( 'Currency', 'paynexus' ), 'text', 'paynexus_general', 'KES' );
-        $this->add_field( 'poll_interval', __( 'Poll Interval (seconds)', 'paynexus' ), 'number', 'paynexus_general', '3' );
-        $this->add_field( 'poll_timeout', __( 'Poll Timeout (seconds)', 'paynexus' ), 'number', 'paynexus_general', '120' );
-        $this->add_field( 'http_timeout', __( 'HTTP Timeout (seconds)', 'paynexus' ), 'number', 'paynexus_general', '30' );
-        $this->add_field( 'http_retries', __( 'HTTP Retries', 'paynexus' ), 'number', 'paynexus_general', '2' );
+        $this->add_field( 'currency', __( 'Currency', 'paynexus-payment-gateway' ), 'text', 'paynexus_general', 'KES' );
+        $this->add_field( 'poll_interval', __( 'Poll Interval (seconds)', 'paynexus-payment-gateway' ), 'number', 'paynexus_general', '3' );
+        $this->add_field( 'poll_timeout', __( 'Poll Timeout (seconds)', 'paynexus-payment-gateway' ), 'number', 'paynexus_general', '120' );
+        $this->add_field( 'http_timeout', __( 'HTTP Timeout (seconds)', 'paynexus-payment-gateway' ), 'number', 'paynexus_general', '30' );
+        $this->add_field( 'http_retries', __( 'HTTP Retries', 'paynexus-payment-gateway' ), 'number', 'paynexus_general', '2' );
     }
 
     /**
@@ -195,7 +195,7 @@ class PayNexus_Admin {
         <div class="wrap paynexus-admin">
             <h1>
                 <img src="<?php echo esc_url( PAYNEXUS_PLUGIN_URL . 'assets/images/logo.png' ); ?>" alt="PayNexus" style="max-height:32px;vertical-align:middle;margin-right:8px;" />
-                <?php esc_html_e( 'PayNexus Settings', 'paynexus' ); ?>
+                <?php esc_html_e( 'PayNexus Settings', 'paynexus-payment-gateway' ); ?>
                 <?php
                 $sk = paynexus()->get_option( 'secret_key', '' );
                 if ( $sk ) {
@@ -204,7 +204,7 @@ class PayNexus_Admin {
                     printf(
                         '<span class="pnx-env-badge pnx-env-badge--%s">%s</span>',
                         $is_test ? 'test' : 'live',
-                        $is_test ? esc_html__( 'Test Mode', 'paynexus' ) : esc_html__( 'Live', 'paynexus' )
+                        $is_test ? esc_html__( 'Test Mode', 'paynexus-payment-gateway' ) : esc_html__( 'Live', 'paynexus-payment-gateway' )
                     );
                 }
                 ?>
@@ -213,20 +213,20 @@ class PayNexus_Admin {
             <?php settings_errors(); ?>
 
             <div class="paynexus-info-box">
-                <h3><?php esc_html_e( 'Quick Start', 'paynexus' ); ?></h3>
+                <h3><?php esc_html_e( 'Quick Start', 'paynexus-payment-gateway' ); ?></h3>
                 <ol>
                     <li><?php printf(
                         /* translators: %s: link */
-                        esc_html__( 'Get your API keys from %s', 'paynexus' ),
+                        esc_html__( 'Get your API keys from %s', 'paynexus-payment-gateway' ),
                         '<a href="https://paynexus.co.ke/merchant/merchant-api-keys" target="_blank">paynexus.co.ke</a>'
                     ); ?></li>
-                    <li><?php esc_html_e( 'Enter your Secret Key and (optional) Public Key below.', 'paynexus' ); ?></li>
+                    <li><?php esc_html_e( 'Enter your Secret Key and (optional) Public Key below.', 'paynexus-payment-gateway' ); ?></li>
                     <li><?php printf(
                         /* translators: %s: webhook URL */
-                        esc_html__( 'Set your webhook URL to: %s', 'paynexus' ),
+                        esc_html__( 'Set your webhook URL to: %s', 'paynexus-payment-gateway' ),
                         '<code>' . esc_html( rest_url( 'paynexus/v1/webhook' ) ) . '</code>'
                     ); ?></li>
-                    <li><?php esc_html_e( 'Use the [paynexus_payment_form] shortcode or WooCommerce gateway.', 'paynexus' ); ?></li>
+                    <li><?php esc_html_e( 'Use the [paynexus_payment_form] shortcode or WooCommerce gateway.', 'paynexus-payment-gateway' ); ?></li>
                 </ol>
             </div>
 
@@ -256,20 +256,20 @@ class PayNexus_Admin {
         $ok     = ! empty( $result['success'] ) || ! empty( $result['data'] );
         ?>
         <div class="paynexus-connection-test <?php echo $ok ? 'success' : 'error'; ?>">
-            <h3><?php esc_html_e( 'Connection Test', 'paynexus' ); ?></h3>
+            <h3><?php esc_html_e( 'Connection Test', 'paynexus-payment-gateway' ); ?></h3>
             <?php if ( $ok ) : ?>
-                <p><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Connected to PayNexus successfully.', 'paynexus' ); ?></p>
+                <p><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Connected to PayNexus successfully.', 'paynexus-payment-gateway' ); ?></p>
                 <?php
                 $data = $result['data'] ?? $result;
                 if ( ! empty( $data['name'] ) ) {
-                    printf( '<p><strong>%s:</strong> %s</p>', esc_html__( 'Merchant', 'paynexus' ), esc_html( $data['name'] ) );
+                    printf( '<p><strong>%s:</strong> %s</p>', esc_html__( 'Merchant', 'paynexus-payment-gateway' ), esc_html( $data['name'] ) );
                 }
                 if ( ! empty( $data['email'] ) ) {
-                    printf( '<p><strong>%s:</strong> %s</p>', esc_html__( 'Email', 'paynexus' ), esc_html( $data['email'] ) );
+                    printf( '<p><strong>%s:</strong> %s</p>', esc_html__( 'Email', 'paynexus-payment-gateway' ), esc_html( $data['email'] ) );
                 }
                 ?>
             <?php else : ?>
-                <p><span class="dashicons dashicons-dismiss"></span> <?php esc_html_e( 'Connection failed.', 'paynexus' ); ?></p>
+                <p><span class="dashicons dashicons-dismiss"></span> <?php esc_html_e( 'Connection failed.', 'paynexus-payment-gateway' ); ?></p>
                 <p><?php echo esc_html( $result['message'] ?? 'Unknown error.' ); ?></p>
             <?php endif; ?>
         </div>
@@ -286,9 +286,9 @@ class PayNexus_Admin {
         }
 
         $per_page = 20;
-        $page     = max( 1, intval( $_GET['paged'] ?? 1 ) );
-        $status   = sanitize_text_field( $_GET['status'] ?? '' );
-        $search   = sanitize_text_field( $_GET['s'] ?? '' );
+        $page     = max( 1, intval( wp_unslash( $_GET['paged'] ?? 1 ) ) );
+        $status   = sanitize_text_field( wp_unslash( $_GET['status'] ?? '' ) );
+        $search   = sanitize_text_field( wp_unslash( $_GET['s'] ?? '' ) );
         $stats    = PayNexus_Payment::get_stats();
         $currency = paynexus()->get_option( 'currency', 'KES' );
 
@@ -306,7 +306,7 @@ class PayNexus_Admin {
         <div class="wrap paynexus-admin">
             <h1>
                 <img src="<?php echo esc_url( PAYNEXUS_PLUGIN_URL . 'assets/images/logo.png' ); ?>" alt="PayNexus" style="max-height:32px;vertical-align:middle;margin-right:8px;" />
-                <?php esc_html_e( 'PayNexus Payments', 'paynexus' ); ?>
+                <?php esc_html_e( 'PayNexus Payments', 'paynexus-payment-gateway' ); ?>
             </h1>
 
             <div class="pnx-stats-grid">
@@ -316,7 +316,7 @@ class PayNexus_Admin {
                     </span>
                     <div class="pnx-stat-body">
                         <span class="pnx-stat-value"><?php echo esc_html( $stats['total_count'] ); ?></span>
-                        <span class="pnx-stat-label"><?php esc_html_e( 'Total Payments', 'paynexus' ); ?></span>
+                        <span class="pnx-stat-label"><?php esc_html_e( 'Total Payments', 'paynexus-payment-gateway' ); ?></span>
                     </div>
                 </div>
                 <div class="pnx-stat-card">
@@ -325,7 +325,7 @@ class PayNexus_Admin {
                     </span>
                     <div class="pnx-stat-body">
                         <span class="pnx-stat-value"><?php echo esc_html( $stats['completed_count'] ); ?></span>
-                        <span class="pnx-stat-label"><?php esc_html_e( 'Completed', 'paynexus' ); ?></span>
+                        <span class="pnx-stat-label"><?php esc_html_e( 'Completed', 'paynexus-payment-gateway' ); ?></span>
                     </div>
                 </div>
                 <div class="pnx-stat-card">
@@ -334,7 +334,7 @@ class PayNexus_Admin {
                     </span>
                     <div class="pnx-stat-body">
                         <span class="pnx-stat-value"><?php echo esc_html( $stats['pending_count'] ); ?></span>
-                        <span class="pnx-stat-label"><?php esc_html_e( 'Pending', 'paynexus' ); ?></span>
+                        <span class="pnx-stat-label"><?php esc_html_e( 'Pending', 'paynexus-payment-gateway' ); ?></span>
                     </div>
                 </div>
                 <div class="pnx-stat-card">
@@ -343,7 +343,7 @@ class PayNexus_Admin {
                     </span>
                     <div class="pnx-stat-body">
                         <span class="pnx-stat-value"><?php echo esc_html( $currency . ' ' . number_format( $stats['total_revenue'], 2 ) ); ?></span>
-                        <span class="pnx-stat-label"><?php esc_html_e( 'Revenue', 'paynexus' ); ?></span>
+                        <span class="pnx-stat-label"><?php esc_html_e( 'Revenue', 'paynexus-payment-gateway' ); ?></span>
                     </div>
                 </div>
             </div>
@@ -352,20 +352,20 @@ class PayNexus_Admin {
                 <form method="get" class="pnx-toolbar__form">
                     <input type="hidden" name="page" value="paynexus-payments" />
                     <select name="status" class="pnx-toolbar__select">
-                        <option value=""><?php esc_html_e( 'All statuses', 'paynexus' ); ?></option>
+                        <option value=""><?php esc_html_e( 'All statuses', 'paynexus-payment-gateway' ); ?></option>
                         <?php foreach ( array( 'pending', 'completed', 'failed', 'timeout' ) as $s ) : ?>
                             <option value="<?php echo esc_attr( $s ); ?>" <?php selected( $status, $s ); ?>><?php echo esc_html( ucfirst( $s ) ); ?></option>
                         <?php endforeach; ?>
                     </select>
                     <input type="search" name="s" value="<?php echo esc_attr( $search ); ?>"
-                           placeholder="<?php esc_attr_e( 'Search phone, reference, txn ID...', 'paynexus' ); ?>"
+                           placeholder="<?php esc_attr_e( 'Search phone, reference, txn ID...', 'paynexus-payment-gateway' ); ?>"
                            class="pnx-toolbar__search" />
-                    <?php submit_button( __( 'Filter', 'paynexus' ), 'secondary', 'filter', false ); ?>
+                    <?php submit_button( __( 'Filter', 'paynexus-payment-gateway' ), 'secondary', 'filter', false ); ?>
                 </form>
                 <?php if ( ! empty( $items ) ) : ?>
                     <a href="<?php echo esc_url( add_query_arg( array( 'page' => 'paynexus-payments', 'export' => 'csv', 'status' => $status, 's' => $search ), admin_url( 'admin.php' ) ) ); ?>" class="button pnx-toolbar__export">
                         <span class="dashicons dashicons-download" style="vertical-align:middle;margin-right:2px;"></span>
-                        <?php esc_html_e( 'Export CSV', 'paynexus' ); ?>
+                        <?php esc_html_e( 'Export CSV', 'paynexus-payment-gateway' ); ?>
                     </a>
                 <?php endif; ?>
             </div>
@@ -373,22 +373,22 @@ class PayNexus_Admin {
             <table class="wp-list-table widefat fixed striped pnx-payments-table">
                 <thead>
                     <tr>
-                        <th style="width:40px;"><?php esc_html_e( 'ID', 'paynexus' ); ?></th>
-                        <th><?php esc_html_e( 'Reference', 'paynexus' ); ?></th>
-                        <th><?php esc_html_e( 'Amount', 'paynexus' ); ?></th>
-                        <th><?php esc_html_e( 'Phone', 'paynexus' ); ?></th>
-                        <th><?php esc_html_e( 'Status', 'paynexus' ); ?></th>
-                        <th><?php esc_html_e( 'Transaction ID', 'paynexus' ); ?></th>
-                        <th><?php esc_html_e( 'Payer', 'paynexus' ); ?></th>
-                        <th><?php esc_html_e( 'Order', 'paynexus' ); ?></th>
-                        <th><?php esc_html_e( 'Date', 'paynexus' ); ?></th>
+                        <th style="width:40px;"><?php esc_html_e( 'ID', 'paynexus-payment-gateway' ); ?></th>
+                        <th><?php esc_html_e( 'Reference', 'paynexus-payment-gateway' ); ?></th>
+                        <th><?php esc_html_e( 'Amount', 'paynexus-payment-gateway' ); ?></th>
+                        <th><?php esc_html_e( 'Phone', 'paynexus-payment-gateway' ); ?></th>
+                        <th><?php esc_html_e( 'Status', 'paynexus-payment-gateway' ); ?></th>
+                        <th><?php esc_html_e( 'Transaction ID', 'paynexus-payment-gateway' ); ?></th>
+                        <th><?php esc_html_e( 'Payer', 'paynexus-payment-gateway' ); ?></th>
+                        <th><?php esc_html_e( 'Order', 'paynexus-payment-gateway' ); ?></th>
+                        <th><?php esc_html_e( 'Date', 'paynexus-payment-gateway' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ( empty( $items ) ) : ?>
                         <tr><td colspan="9" style="text-align:center;padding:40px 20px;color:#888;">
                             <span class="dashicons dashicons-search" style="font-size:32px;display:block;margin:0 auto 8px;color:#ccc;"></span>
-                            <?php esc_html_e( 'No payments found.', 'paynexus' ); ?>
+                            <?php esc_html_e( 'No payments found.', 'paynexus-payment-gateway' ); ?>
                         </td></tr>
                     <?php else : ?>
                         <?php foreach ( $items as $item ) :
@@ -428,12 +428,12 @@ class PayNexus_Admin {
                 <div class="tablenav bottom">
                     <div class="tablenav-pages">
                         <?php
-                        echo paginate_links( array(
+                        echo wp_kses_post( paginate_links( array(
                             'base'    => add_query_arg( 'paged', '%#%' ),
                             'format'  => '',
                             'current' => $page,
                             'total'   => $pages,
-                        ) );
+                        ) ) );
                         ?>
                     </div>
                 </div>

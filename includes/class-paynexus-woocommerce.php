@@ -13,15 +13,15 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
         $this->id                 = 'paynexus';
         $this->icon               = PAYNEXUS_PLUGIN_URL . 'assets/images/mpesa-logo.png';
         $this->has_fields         = true;
-        $this->method_title       = __( 'PayNexus (M-Pesa)', 'paynexus' );
-        $this->method_description = __( 'Accept M-Pesa payments via PayNexus. Customers receive an STK Push on their phone to complete payment.', 'paynexus' );
+        $this->method_title       = __( 'PayNexus (M-Pesa)', 'paynexus-payment-gateway' );
+        $this->method_description = __( 'Accept M-Pesa payments via PayNexus. Customers receive an STK Push on their phone to complete payment.', 'paynexus-payment-gateway' );
         $this->supports           = array( 'products', 'refunds' );
 
         $this->init_form_fields();
         $this->init_settings();
 
-        $this->title       = $this->get_option( 'title', __( 'M-Pesa (PayNexus)', 'paynexus' ) );
-        $this->description = $this->get_option( 'description', __( 'Pay securely with M-Pesa. You will receive a payment prompt on your phone.', 'paynexus' ) );
+        $this->title       = $this->get_option( 'title', __( 'M-Pesa (PayNexus)', 'paynexus-payment-gateway' ) );
+        $this->description = $this->get_option( 'description', __( 'Pay securely with M-Pesa. You will receive a payment prompt on your phone.', 'paynexus-payment-gateway' ) );
         $this->enabled     = $this->get_option( 'enabled', 'no' );
 
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -43,30 +43,30 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
     public function init_form_fields() {
         $this->form_fields = array(
             'enabled'     => array(
-                'title'   => __( 'Enable/Disable', 'paynexus' ),
+                'title'   => __( 'Enable/Disable', 'paynexus-payment-gateway' ),
                 'type'    => 'checkbox',
-                'label'   => __( 'Enable PayNexus M-Pesa payments', 'paynexus' ),
+                'label'   => __( 'Enable PayNexus M-Pesa payments', 'paynexus-payment-gateway' ),
                 'default' => 'no',
             ),
             'title'       => array(
-                'title'       => __( 'Title', 'paynexus' ),
+                'title'       => __( 'Title', 'paynexus-payment-gateway' ),
                 'type'        => 'text',
-                'description' => __( 'Title shown at checkout.', 'paynexus' ),
-                'default'     => __( 'M-Pesa (PayNexus)', 'paynexus' ),
+                'description' => __( 'Title shown at checkout.', 'paynexus-payment-gateway' ),
+                'default'     => __( 'M-Pesa (PayNexus)', 'paynexus-payment-gateway' ),
                 'desc_tip'    => true,
             ),
             'description' => array(
-                'title'       => __( 'Description', 'paynexus' ),
+                'title'       => __( 'Description', 'paynexus-payment-gateway' ),
                 'type'        => 'textarea',
-                'description' => __( 'Description shown at checkout.', 'paynexus' ),
-                'default'     => __( 'Pay securely with M-Pesa. You will receive a payment prompt on your phone.', 'paynexus' ),
+                'description' => __( 'Description shown at checkout.', 'paynexus-payment-gateway' ),
+                'default'     => __( 'Pay securely with M-Pesa. You will receive a payment prompt on your phone.', 'paynexus-payment-gateway' ),
                 'desc_tip'    => true,
             ),
             'instructions' => array(
-                'title'       => __( 'Thank You Page Instructions', 'paynexus' ),
+                'title'       => __( 'Thank You Page Instructions', 'paynexus-payment-gateway' ),
                 'type'        => 'textarea',
-                'description' => __( 'Displayed on the thank-you page after checkout.', 'paynexus' ),
-                'default'     => __( 'An M-Pesa payment prompt has been sent to your phone. Enter your PIN to complete the payment.', 'paynexus' ),
+                'description' => __( 'Displayed on the thank-you page after checkout.', 'paynexus-payment-gateway' ),
+                'default'     => __( 'An M-Pesa payment prompt has been sent to your phone. Enter your PIN to complete the payment.', 'paynexus-payment-gateway' ),
                 'desc_tip'    => true,
             ),
 
@@ -78,28 +78,28 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
      */
     public function payment_fields() {
         if ( $this->description ) {
-            echo wpautop( wptexturize( $this->description ) );
+            echo wp_kses_post( wpautop( wptexturize( $this->description ) ) );
         }
         ?>
         <fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-form" class="wc-payment-form pnx-checkout-fields">
             <div class="pnx-phone-field">
                 <label for="paynexus_phone" class="pnx-phone-label">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00A650" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                    <?php esc_html_e( 'M-Pesa Phone Number', 'paynexus' ); ?> <span class="required">*</span>
+                    <?php esc_html_e( 'M-Pesa Phone Number', 'paynexus-payment-gateway' ); ?> <span class="required">*</span>
                 </label>
                 <div class="pnx-phone-input-wrap">
                     <span class="pnx-phone-prefix">+254</span>
                     <input type="tel" class="input-text pnx-phone-input" id="paynexus_phone" name="paynexus_phone"
-                           placeholder="<?php esc_attr_e( '712345678', 'paynexus' ); ?>"
+                           placeholder="<?php esc_attr_e( '712345678', 'paynexus-payment-gateway' ); ?>"
                            pattern="^(?:\+?254|0)\d{9}$" required
                            oninput="(function(el){var v=el.value.replace(/\D/g,'');var ok=/^(?:254\d{9}|0\d{9}|\d{9})$/.test(v);var fb=el.parentNode.nextElementSibling;if(fb){fb.className='pnx-phone-feedback'+(v.length>0?(ok?' pnx-phone-valid':' pnx-phone-invalid'):'')}})(this)" />
                 </div>
                 <span class="pnx-phone-feedback" id="pnx-phone-feedback"></span>
-                <small class="pnx-phone-hint"><?php esc_html_e( 'Format: 254712345678 or 0712345678', 'paynexus' ); ?></small>
+                <small class="pnx-phone-hint"><?php esc_html_e( 'Format: 254712345678 or 0712345678', 'paynexus-payment-gateway' ); ?></small>
             </div>
             <div class="pnx-secure-badge">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00A650" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <span><?php esc_html_e( 'Secured by PayNexus', 'paynexus' ); ?></span>
+                <span><?php esc_html_e( 'Secured by PayNexus', 'paynexus-payment-gateway' ); ?></span>
             </div>
         </fieldset>
         <style>
@@ -123,15 +123,15 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
      * Validate checkout fields.
      */
     public function validate_fields() {
-        $phone = sanitize_text_field( $_POST['paynexus_phone'] ?? '' );
+        $phone = sanitize_text_field( wp_unslash( $_POST['paynexus_phone'] ?? '' ) );
 
         if ( empty( $phone ) ) {
-            wc_add_notice( __( 'Please enter your M-Pesa phone number.', 'paynexus' ), 'error' );
+            wc_add_notice( __( 'Please enter your M-Pesa phone number.', 'paynexus-payment-gateway' ), 'error' );
             return false;
         }
 
         if ( ! preg_match( '/^(?:\+?254|0)\d{9}$/', $phone ) ) {
-            wc_add_notice( __( 'Please enter a valid Kenyan phone number (e.g., 254712345678).', 'paynexus' ), 'error' );
+            wc_add_notice( __( 'Please enter a valid Kenyan phone number (e.g., 254712345678).', 'paynexus-payment-gateway' ), 'error' );
             return false;
         }
 
@@ -143,7 +143,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
      */
     public function process_payment( $order_id ) {
         $order = wc_get_order( $order_id );
-        $phone = sanitize_text_field( $_POST['paynexus_phone'] ?? '' );
+        $phone = sanitize_text_field( wp_unslash( $_POST['paynexus_phone'] ?? '' ) );
 
         // Normalise phone.
         $phone = preg_replace( '/^\+/', '', $phone );
@@ -156,7 +156,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
             'phone'       => $phone,
             'description' => sprintf(
                 /* translators: %s: order number */
-                __( 'Order %s', 'paynexus' ),
+                __( 'Order %s', 'paynexus-payment-gateway' ),
                 $order->get_order_number()
             ),
         );
@@ -177,7 +177,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
                 PayNexus_Payment::update_payment( $local->id, array( 'order_id' => $order_id ) );
             }
 
-            $order->update_status( 'pending', __( 'Awaiting M-Pesa payment confirmation.', 'paynexus' ) );
+            $order->update_status( 'pending', __( 'Awaiting M-Pesa payment confirmation.', 'paynexus-payment-gateway' ) );
 
             return array(
                 'result'   => 'success',
@@ -185,7 +185,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
             );
         }
 
-        $message = $result['message'] ?? __( 'Payment initiation failed. Please try again.', 'paynexus' );
+        $message = $result['message'] ?? __( 'Payment initiation failed. Please try again.', 'paynexus-payment-gateway' );
         wc_add_notice( $message, 'error' );
 
         return array(
@@ -227,7 +227,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00A650" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
                     </svg>
-                    <p class="pnx-thankyou__prompt"><?php esc_html_e( 'Check your phone and enter your M-Pesa PIN', 'paynexus' ); ?></p>
+                    <p class="pnx-thankyou__prompt"><?php esc_html_e( 'Check your phone and enter your M-Pesa PIN', 'paynexus-payment-gateway' ); ?></p>
                     <?php if ( $phone ) : ?>
                         <span class="pnx-thankyou__phone-num"><?php echo esc_html( substr( $phone, 0, 6 ) . '***' . substr( $phone, -2 ) ); ?></span>
                     <?php endif; ?>
@@ -238,39 +238,39 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
                         <div class="pnx-step__icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
                         </div>
-                        <span class="pnx-step__label"><?php esc_html_e( 'STK Sent', 'paynexus' ); ?></span>
+                        <span class="pnx-step__label"><?php esc_html_e( 'STK Sent', 'paynexus-payment-gateway' ); ?></span>
                     </div>
                     <div class="pnx-step__line"></div>
                     <div class="pnx-step" id="pnx-step-2">
                         <div class="pnx-step__icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
                         </div>
-                        <span class="pnx-step__label"><?php esc_html_e( 'Enter PIN', 'paynexus' ); ?></span>
+                        <span class="pnx-step__label"><?php esc_html_e( 'Enter PIN', 'paynexus-payment-gateway' ); ?></span>
                     </div>
                     <div class="pnx-step__line"></div>
                     <div class="pnx-step" id="pnx-step-3">
                         <div class="pnx-step__icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
                         </div>
-                        <span class="pnx-step__label"><?php esc_html_e( 'Confirming', 'paynexus' ); ?></span>
+                        <span class="pnx-step__label"><?php esc_html_e( 'Confirming', 'paynexus-payment-gateway' ); ?></span>
                     </div>
                     <div class="pnx-step__line"></div>
                     <div class="pnx-step" id="pnx-step-4">
                         <div class="pnx-step__icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
                         </div>
-                        <span class="pnx-step__label"><?php esc_html_e( 'Complete', 'paynexus' ); ?></span>
+                        <span class="pnx-step__label"><?php esc_html_e( 'Complete', 'paynexus-payment-gateway' ); ?></span>
                     </div>
                 </div>
 
                 <div class="pnx-thankyou__status" id="pnx-status">
                     <div class="pnx-thankyou__spinner" id="pnx-spinner"></div>
-                    <p class="pnx-thankyou__msg" id="pnx-status-msg"><?php esc_html_e( 'Waiting for M-Pesa confirmation...', 'paynexus' ); ?></p>
+                    <p class="pnx-thankyou__msg" id="pnx-status-msg"><?php esc_html_e( 'Waiting for M-Pesa confirmation...', 'paynexus-payment-gateway' ); ?></p>
                 </div>
 
                 <div class="pnx-thankyou__result" id="pnx-result" style="display:none;"></div>
             </div>
-            <p class="pnx-thankyou__footer"><?php esc_html_e( 'Secured by PayNexus', 'paynexus' ); ?></p>
+            <p class="pnx-thankyou__footer"><?php esc_html_e( 'Secured by PayNexus', 'paynexus-payment-gateway' ); ?></p>
         </div>
 
         <style>
