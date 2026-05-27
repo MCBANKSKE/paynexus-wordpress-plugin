@@ -86,6 +86,25 @@ final class PayNexus {
         }
         require_once PAYNEXUS_PLUGIN_DIR . 'includes/class-paynexus-woocommerce.php';
         add_filter( 'woocommerce_payment_gateways', array( 'PayNexus_WooCommerce', 'add_gateway' ) );
+
+        // Register block checkout support.
+        add_action( 'woocommerce_blocks_loaded', array( $this, 'register_block_payment_method' ) );
+    }
+
+    /**
+     * Register the block-based checkout payment method.
+     */
+    public function register_block_payment_method() {
+        if ( ! class_exists( 'Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry' ) ) {
+            return;
+        }
+        require_once PAYNEXUS_PLUGIN_DIR . 'includes/class-paynexus-woocommerce-blocks.php';
+        add_action(
+            'woocommerce_blocks_payment_method_type_registration',
+            function ( $registry ) {
+                $registry->register( new PayNexus_WooCommerce_Blocks() );
+            }
+        );
     }
 
     /**

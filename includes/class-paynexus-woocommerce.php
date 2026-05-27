@@ -69,13 +69,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
                 'default'     => __( 'An M-Pesa payment prompt has been sent to your phone. Enter your PIN to complete the payment.', 'paynexus' ),
                 'desc_tip'    => true,
             ),
-            'payment_account_id' => array(
-                'title'       => __( 'Payment Account ID', 'paynexus' ),
-                'type'        => 'text',
-                'description' => __( 'Optional. Leave blank to auto-resolve from your PayNexus account.', 'paynexus' ),
-                'default'     => '',
-                'desc_tip'    => true,
-            ),
+
         );
     }
 
@@ -140,11 +134,6 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
                 $order->get_order_number()
             ),
         );
-
-        $payment_account_id = $this->get_option( 'payment_account_id' );
-        if ( ! empty( $payment_account_id ) ) {
-            $data['payment_account_id'] = intval( $payment_account_id );
-        }
 
         $result = paynexus()->client->initiate_payment( $data );
 
