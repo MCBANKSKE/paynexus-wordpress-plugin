@@ -165,35 +165,35 @@ class PayNexus_Payment {
         // Use switch statement for SQL-safe column selection
         switch ( $column ) {
             case 'id':
-                $sql = 'SELECT * FROM ' . $table . ' WHERE `id` = %s LIMIT 1';
+                $sql = 'SELECT * FROM %i WHERE `id` = %s LIMIT 1';
                 break;
             case 'paynexus_payment_id':
-                $sql = 'SELECT * FROM ' . $table . ' WHERE `paynexus_payment_id` = %s LIMIT 1';
+                $sql = 'SELECT * FROM %i WHERE `paynexus_payment_id` = %s LIMIT 1';
                 break;
             case 'reference':
-                $sql = 'SELECT * FROM ' . $table . ' WHERE `reference` = %s LIMIT 1';
+                $sql = 'SELECT * FROM %i WHERE `reference` = %s LIMIT 1';
                 break;
             case 'checkout_request_id':
-                $sql = 'SELECT * FROM ' . $table . ' WHERE `checkout_request_id` = %s LIMIT 1';
+                $sql = 'SELECT * FROM %i WHERE `checkout_request_id` = %s LIMIT 1';
                 break;
             case 'merchant_request_id':
-                $sql = 'SELECT * FROM ' . $table . ' WHERE `merchant_request_id` = %s LIMIT 1';
+                $sql = 'SELECT * FROM %i WHERE `merchant_request_id` = %s LIMIT 1';
                 break;
             case 'transaction_id':
-                $sql = 'SELECT * FROM ' . $table . ' WHERE `transaction_id` = %s LIMIT 1';
+                $sql = 'SELECT * FROM %i WHERE `transaction_id` = %s LIMIT 1';
                 break;
             case 'order_id':
-                $sql = 'SELECT * FROM ' . $table . ' WHERE `order_id` = %s LIMIT 1';
+                $sql = 'SELECT * FROM %i WHERE `order_id` = %s LIMIT 1';
                 break;
             case 'idempotency_key':
-                $sql = 'SELECT * FROM ' . $table . ' WHERE `idempotency_key` = %s LIMIT 1';
+                $sql = 'SELECT * FROM %i WHERE `idempotency_key` = %s LIMIT 1';
                 break;
             default:
                 return null;
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
-        $result = $wpdb->get_row( $wpdb->prepare( $sql, $value ) );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
+        $result = $wpdb->get_row( $wpdb->prepare( $sql, $table, $value ) );
         wp_cache_set( $cache_key, $result, 'paynexus', HOUR_IN_SECONDS );
 
         return $result;
@@ -213,11 +213,14 @@ class PayNexus_Payment {
             return $cached;
         }
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name comes from trusted internal method.
-        $result = $wpdb->get_results( $wpdb->prepare(
-            'SELECT * FROM ' . $table . ' WHERE order_id = %d ORDER BY created_at DESC',
-            intval( $order_id )
-        ) );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
+        $result = $wpdb->get_results(
+            $wpdb->prepare(
+                'SELECT * FROM %i WHERE order_id = %d ORDER BY created_at DESC',
+                $table,
+                intval( $order_id )
+            )
+        );
 
         wp_cache_set( $cache_key, $result, 'paynexus', MINUTE_IN_SECONDS );
 
@@ -293,7 +296,8 @@ class PayNexus_Payment {
         $order_sql = 'ASC' === $order ? 'ASC' : 'DESC';
 
         // Build COUNT query progressively
-        $count_sql = "SELECT COUNT(*) FROM {$table} WHERE 1=1";
+        $count_sql = "SELECT COUNT(*) FROM %i WHERE 1=1";
+        array_unshift( $values, $table );
 
         if ( ! empty( $args['status'] ) ) {
             $count_sql .= ' AND status = %s';
@@ -309,14 +313,12 @@ class PayNexus_Payment {
             $values[] = $like;
         }
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table name from trusted internal method, query prepared below.
-        $count_query = $wpdb->prepare( $count_sql, $values );
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
-        $total = (int) $wpdb->get_var( $count_query );
+        $total = (int) $wpdb->get_var( $wpdb->prepare( $count_sql, $values ) );
 
         // Build SELECT query progressively
-        $select_sql = "SELECT * FROM {$table} WHERE 1=1";
-        $select_values = array();
+        $select_sql = "SELECT * FROM %i WHERE 1=1";
+        $select_values = array( $table );
 
         if ( ! empty( $args['status'] ) ) {
             $select_sql .= ' AND status = %s';
@@ -336,10 +338,8 @@ class PayNexus_Payment {
         $select_values[] = $per_page;
         $select_values[] = $offset;
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table name from trusted internal method, query prepared below.
-        $select_query = $wpdb->prepare( $select_sql, $select_values );
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
-        $items = $wpdb->get_results( $select_query );
+        $items = $wpdb->get_results( $wpdb->prepare( $select_sql, $select_values ) );
 
         $result = array(
             'items' => $items,
@@ -366,9 +366,12 @@ class PayNexus_Payment {
 
         $table = self::table_name();
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name comes from trusted internal method.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
         $rows = $wpdb->get_results(
-            'SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM ' . $table . ' GROUP BY status'
+            $wpdb->prepare(
+                'SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM %i GROUP BY status',
+                $table
+            )
         );
 
         $stats = array(
