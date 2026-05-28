@@ -86,7 +86,12 @@ class PayNexus_Payment {
 
         $wpdb->insert( self::table_name(), $data );
 
-        return $wpdb->insert_id ?: false;
+        $insert_id = $wpdb->insert_id ?: false;
+
+        // Clear stats cache after insert
+        wp_cache_delete( 'paynexus_stats', 'paynexus' );
+
+        return $insert_id;
     }
 
     /**
@@ -97,11 +102,31 @@ class PayNexus_Payment {
 
         $data['updated_at'] = current_time( 'mysql', true );
 
-        return $wpdb->update(
+        $result = $wpdb->update(
             self::table_name(),
             $data,
             array( 'id' => intval( $id ) )
         );
+
+        // Clear cache for this payment and stats after update
+        wp_cache_delete( 'paynexus_payment_id_' . $id, 'paynexus' );
+        wp_cache_delete( 'paynexus_stats', 'paynexus' );
+
+        // Clear cache for indexed columns if they were updated
+        if ( isset( $data['reference'] ) ) {
+            wp_cache_delete( 'paynexus_payment_reference_' . $data['reference'], 'paynexus' );
+        }
+        if ( isset( $data['checkout_request_id'] ) ) {
+            wp_cache_delete( 'paynexus_payment_checkout_request_id_' . $data['checkout_request_id'], 'paynexus' );
+        }
+        if ( isset( $data['transaction_id'] ) ) {
+            wp_cache_delete( 'paynexus_payment_transaction_id_' . $data['transaction_id'], 'paynexus' );
+        }
+        if ( isset( $data['order_id'] ) ) {
+            wp_cache_delete( 'paynexus_payment_order_id_' . $data['order_id'], 'paynexus' );
+        }
+
+        return $result;
     }
 
     /**
@@ -112,22 +137,48 @@ class PayNexus_Payment {
     public static function find_by( $column, $value ) {
         global $wpdb;
 
-        $table    = self::table_name();
-        $allowed  = array(
-            'id', 'paynexus_payment_id', 'reference',
-            'checkout_request_id', 'merchant_request_id',
-            'transaction_id', 'order_id', 'idempotency_key',
-        );
+        $table = self::table_name();
+        $cache_key = 'paynexus_payment_' . $column . '_' . $value;
+        $cached = wp_cache_get( $cache_key, 'paynexus' );
 
-        if ( ! in_array( $column, $allowed, true ) ) {
-            return null;
+        if ( false !== $cached ) {
+            return $cached;
         }
 
-        // Use backticks around column name to prevent SQL injection
-        return $wpdb->get_row( $wpdb->prepare(
-            "SELECT * FROM {$table} WHERE `{$column}` = %s LIMIT 1",
-            $value
-        ) );
+        // Use switch statement for SQL-safe column selection
+        switch ( $column ) {
+            case 'id':
+                $sql = "SELECT * FROM {$table} WHERE `id` = %s LIMIT 1";
+                break;
+            case 'paynexus_payment_id':
+                $sql = "SELECT * FROM {$table} WHERE `paynexus_payment_id` = %s LIMIT 1";
+                break;
+            case 'reference':
+                $sql = "SELECT * FROM {$table} WHERE `reference` = %s LIMIT 1";
+                break;
+            case 'checkout_request_id':
+                $sql = "SELECT * FROM {$table} WHERE `checkout_request_id` = %s LIMIT 1";
+                break;
+            case 'merchant_request_id':
+                $sql = "SELECT * FROM {$table} WHERE `merchant_request_id` = %s LIMIT 1";
+                break;
+            case 'transaction_id':
+                $sql = "SELECT * FROM {$table} WHERE `transaction_id` = %s LIMIT 1";
+                break;
+            case 'order_id':
+                $sql = "SELECT * FROM {$table} WHERE `order_id` = %s LIMIT 1";
+                break;
+            case 'idempotency_key':
+                $sql = "SELECT * FROM {$table} WHERE `idempotency_key` = %s LIMIT 1";
+                break;
+            default:
+                return null;
+        }
+
+        $result = $wpdb->get_row( $wpdb->prepare( $sql, $value ) );
+        wp_cache_set( $cache_key, $result, 'paynexus', HOUR_IN_SECONDS );
+
+        return $result;
     }
 
     /**
@@ -195,19 +246,43 @@ class PayNexus_Payment {
         $per_page     = max( 1, intval( $args['per_page'] ) );
         $offset       = max( 0, ( intval( $args['page'] ) - 1 ) * $per_page );
 
+        // Use switch for SQL-safe orderby
+        switch ( $orderby ) {
+            case 'id':
+                $orderby_sql = '`id`';
+                break;
+            case 'amount':
+                $orderby_sql = '`amount`';
+                break;
+            case 'status':
+                $orderby_sql = '`status`';
+                break;
+            case 'created_at':
+                $orderby_sql = '`created_at`';
+                break;
+            case 'updated_at':
+                $orderby_sql = '`updated_at`';
+                break;
+            default:
+                $orderby_sql = '`created_at`';
+        }
+
+        // Use switch for SQL-safe order
+        $order_sql = 'ASC' === $order ? 'ASC' : 'DESC';
+
         if ( ! empty( $values ) ) {
             $total = (int) $wpdb->get_var( $wpdb->prepare(
                 "SELECT COUNT(*) FROM {$table} WHERE {$where}",
                 ...$values
             ) );
             $items = $wpdb->get_results( $wpdb->prepare(
-                "SELECT * FROM {$table} WHERE {$where} ORDER BY `{$orderby}` {$order} LIMIT %d OFFSET %d",
+                "SELECT * FROM {$table} WHERE {$where} ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d",
                 ...array_merge( $values, array( $per_page, $offset ) )
             ) );
         } else {
             $total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE {$where}" );
             $items = $wpdb->get_results( $wpdb->prepare(
-                "SELECT * FROM {$table} WHERE {$where} ORDER BY `{$orderby}` {$order} LIMIT %d OFFSET %d",
+                "SELECT * FROM {$table} WHERE {$where} ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d",
                 $per_page,
                 $offset
             ) );
@@ -224,6 +299,13 @@ class PayNexus_Payment {
      */
     public static function get_stats() {
         global $wpdb;
+
+        $cache_key = 'paynexus_stats';
+        $cached = wp_cache_get( $cache_key, 'paynexus' );
+
+        if ( false !== $cached ) {
+            return $cached;
+        }
 
         $table = self::table_name();
 
@@ -253,6 +335,8 @@ class PayNexus_Payment {
             }
         }
 
+        wp_cache_set( $cache_key, $stats, 'paynexus', 5 * MINUTE_IN_SECONDS );
+
         return $stats;
     }
 
@@ -261,6 +345,7 @@ class PayNexus_Payment {
      */
     public static function drop_table() {
         global $wpdb;
-        $wpdb->query( "DROP TABLE IF EXISTS " . self::table_name() );
+        $table_name = self::table_name();
+        $wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS `%s`", $table_name ) );
     }
 }

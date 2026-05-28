@@ -289,6 +289,12 @@ class PayNexus_Admin {
         $page     = max( 1, intval( wp_unslash( $_GET['paged'] ?? 1 ) ) );
         $status   = sanitize_text_field( wp_unslash( $_GET['status'] ?? '' ) );
         $search   = sanitize_text_field( wp_unslash( $_GET['s'] ?? '' ) );
+
+        // Verify nonce for filter form
+        if ( isset( $_GET['filter'] ) ) {
+            check_admin_referer( 'paynexus_filter_payments', 'paynexus_nonce' );
+        }
+
         $stats    = PayNexus_Payment::get_stats();
         $currency = paynexus()->get_option( 'currency', 'KES' );
 
@@ -350,6 +356,7 @@ class PayNexus_Admin {
 
             <div class="pnx-toolbar">
                 <form method="get" class="pnx-toolbar__form">
+                    <?php wp_nonce_field( 'paynexus_filter_payments', 'paynexus_nonce' ); ?>
                     <input type="hidden" name="page" value="paynexus-payments" />
                     <select name="status" class="pnx-toolbar__select">
                         <option value=""><?php esc_html_e( 'All statuses', 'paynexus-payment-gateway' ); ?></option>
@@ -411,7 +418,7 @@ class PayNexus_Admin {
                                 <?php endif; ?></td>
                                 <td><?php echo esc_html( $item->payer_name ?? '—' ); ?></td>
                                 <td><?php if ( ! empty( $item->order_id ) ) : ?>
-                                    <a href="<?php echo esc_url( admin_url( 'post.php?post=' . intval( $item->order_id ) . '&action=edit' ) ); ?>" title="<?php esc_attr_e( 'View Order', 'paynexus' ); ?>">
+                                    <a href="<?php echo esc_url( admin_url( 'post.php?post=' . intval( $item->order_id ) . '&action=edit' ) ); ?>" title="<?php esc_attr_e( 'View Order', 'paynexus-payment-gateway' ); ?>">
                                         #<?php echo esc_html( $item->order_id ); ?>
                                     </a>
                                 <?php else : ?>

@@ -56,7 +56,7 @@ class PayNexus_Shortcode {
 
                 <?php if ( $show_amount ) : ?>
                     <div class="paynexus-field">
-                        /* translators: %s: currency code */
+                        <?php /* translators: %s: currency code */ ?>
                         <label for="paynexus-amount"><?php printf( esc_html__( 'Amount (%s)', 'paynexus-payment-gateway' ), esc_html( $currency ) ); ?></label>
                         <input type="number" id="paynexus-amount" name="amount"
                                min="1" step="0.01" required
