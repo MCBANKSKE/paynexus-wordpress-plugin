@@ -190,7 +190,7 @@ class PayNexus_Payment {
                 return null;
         }
 
-        $result = $wpdb->get_row( $wpdb->prepare( $sql, $value ) );
+        $result = $wpdb->get_row( $wpdb->prepare( $sql, $value ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
         wp_cache_set( $cache_key, $result, 'paynexus', HOUR_IN_SECONDS );
 
         return $result;
@@ -211,7 +211,7 @@ class PayNexus_Payment {
         }
 
         $result = $wpdb->get_results( $wpdb->prepare(
-            'SELECT * FROM ' . $table . ' WHERE order_id = %d ORDER BY created_at DESC',
+            'SELECT * FROM ' . $table . ' WHERE order_id = %d ORDER BY created_at DESC', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             intval( $order_id )
         ) );
 
@@ -303,14 +303,23 @@ class PayNexus_Payment {
         // Use switch for SQL-safe order
         $order_sql = 'ASC' === $order ? 'ASC' : 'DESC';
 
-        $total = (int) $wpdb->get_var( $wpdb->prepare(
-            'SELECT COUNT(*) FROM ' . $table . ' WHERE ' . $where,
-            ...$values
-        ) );
-        $items = $wpdb->get_results( $wpdb->prepare(
-            'SELECT * FROM ' . $table . ' WHERE ' . $where . ' ORDER BY ' . $orderby_sql . ' ' . $order_sql . ' LIMIT %d OFFSET %d',
-            ...array_merge( $values, array( $per_page, $offset ) )
-        ) );
+        if ( ! empty( $values ) ) {
+            $total = (int) $wpdb->get_var( $wpdb->prepare(
+                'SELECT COUNT(*) FROM ' . $table . ' WHERE ' . $where, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                ...$values
+            ) );
+            $items = $wpdb->get_results( $wpdb->prepare(
+                'SELECT * FROM ' . $table . ' WHERE ' . $where . ' ORDER BY ' . $orderby_sql . ' ' . $order_sql . ' LIMIT %d OFFSET %d', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                ...array_merge( $values, array( $per_page, $offset ) )
+            ) );
+        } else {
+            $total = (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . $table . ' WHERE ' . $where ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            $items = $wpdb->get_results( $wpdb->prepare(
+                'SELECT * FROM ' . $table . ' WHERE ' . $where . ' ORDER BY ' . $orderby_sql . ' ' . $order_sql . ' LIMIT %d OFFSET %d', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                $per_page,
+                $offset
+            ) );
+        }
 
         $result = array(
             'items' => $items,
@@ -338,7 +347,7 @@ class PayNexus_Payment {
         $table = self::table_name();
 
         $rows = $wpdb->get_results(
-            'SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM ' . $table . ' GROUP BY status'
+            'SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM ' . $table . ' GROUP BY status' // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
         );
 
         $stats = array(

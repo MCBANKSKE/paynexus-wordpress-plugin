@@ -139,7 +139,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
         // before calling this method. The nonce is checked in WC_Checkout::process_checkout()
         // which calls this method only after successful verification.
         $order = wc_get_order( $order_id );
-        $phone = sanitize_text_field( wp_unslash( $_POST['paynexus_phone'] ?? '' ) );
+        $phone = sanitize_text_field( wp_unslash( $_POST['paynexus_phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
         // Normalise phone.
         $phone = preg_replace( '/^\+/', '', $phone );
