@@ -4,7 +4,7 @@ Tags: payment, mpesa, mobile money, woocommerce, kenya
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -67,6 +67,10 @@ Kenyan phone numbers in the format 254746990866 (with country code, no +).
 Set your webhook URL to `https://yoursite.com/wp-json/paynexus/v1/webhook` in the PayNexus dashboard.
 
 == Changelog ==
+
+= 1.0.1 =
+* Fixed security vulnerabilities
+* Updated plugin to meet WordPress plugin standards
 
 = 1.0.0 =
 * Initial release
