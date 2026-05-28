@@ -165,27 +165,35 @@ class PayNexus_Payment {
         // Use switch statement for SQL-safe column selection
         switch ( $column ) {
             case 'id':
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
                 $query = $wpdb->prepare( 'SELECT * FROM ' . $table . ' WHERE `id` = %s LIMIT 1', $value );
                 break;
             case 'paynexus_payment_id':
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
                 $query = $wpdb->prepare( 'SELECT * FROM ' . $table . ' WHERE `paynexus_payment_id` = %s LIMIT 1', $value );
                 break;
             case 'reference':
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
                 $query = $wpdb->prepare( 'SELECT * FROM ' . $table . ' WHERE `reference` = %s LIMIT 1', $value );
                 break;
             case 'checkout_request_id':
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
                 $query = $wpdb->prepare( 'SELECT * FROM ' . $table . ' WHERE `checkout_request_id` = %s LIMIT 1', $value );
                 break;
             case 'merchant_request_id':
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
                 $query = $wpdb->prepare( 'SELECT * FROM ' . $table . ' WHERE `merchant_request_id` = %s LIMIT 1', $value );
                 break;
             case 'transaction_id':
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
                 $query = $wpdb->prepare( 'SELECT * FROM ' . $table . ' WHERE `transaction_id` = %s LIMIT 1', $value );
                 break;
             case 'order_id':
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
                 $query = $wpdb->prepare( 'SELECT * FROM ' . $table . ' WHERE `order_id` = %s LIMIT 1', $value );
                 break;
             case 'idempotency_key':
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
                 $query = $wpdb->prepare( 'SELECT * FROM ' . $table . ' WHERE `idempotency_key` = %s LIMIT 1', $value );
                 break;
             default:
@@ -213,6 +221,7 @@ class PayNexus_Payment {
             return $cached;
         }
 
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
         $query = $wpdb->prepare(
             'SELECT * FROM ' . $table . ' WHERE order_id = %d ORDER BY created_at DESC',
             intval( $order_id )
@@ -293,47 +302,53 @@ class PayNexus_Payment {
         // Use switch for SQL-safe order
         $order_sql = 'ASC' === $order ? 'ASC' : 'DESC';
 
-        // Build WHERE conditions
-        $where = array();
-        $where_values = array();
+        // Build COUNT query progressively
+        $count_sql = "SELECT COUNT(*) FROM {$table} WHERE 1=1";
 
         if ( ! empty( $args['status'] ) ) {
-            $where[] = 'status = %s';
-            $where_values[] = $args['status'];
+            $count_sql .= ' AND status = %s';
+            $values[] = $args['status'];
         }
 
         if ( ! empty( $args['search'] ) ) {
             $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
-            $where[] = '(phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
-            $where_values[] = $like;
-            $where_values[] = $like;
-            $where_values[] = $like;
-            $where_values[] = $like;
+            $count_sql .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
+            $values[] = $like;
+            $values[] = $like;
+            $values[] = $like;
+            $values[] = $like;
         }
 
-        $where_clause = '';
-        if ( ! empty( $where ) ) {
-            $where_clause = ' WHERE ' . implode( ' AND ', $where );
-        }
-
-        // Build COUNT query
-        $count_query = $wpdb->prepare(
-            "SELECT COUNT(*) FROM {$table}{$where_clause}",
-            $where_values
-        );
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name comes from trusted internal method.
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
+        $count_query = $wpdb->prepare( $count_sql, $values );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
         $total = (int) $wpdb->get_var( $count_query );
 
-        // Build SELECT query
-        $select_values = $where_values;
+        // Build SELECT query progressively
+        $select_sql = "SELECT * FROM {$table} WHERE 1=1";
+        $select_values = array();
+
+        if ( ! empty( $args['status'] ) ) {
+            $select_sql .= ' AND status = %s';
+            $select_values[] = $args['status'];
+        }
+
+        if ( ! empty( $args['search'] ) ) {
+            $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+            $select_sql .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
+            $select_values[] = $like;
+            $select_values[] = $like;
+            $select_values[] = $like;
+            $select_values[] = $like;
+        }
+
+        $select_sql .= " ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d";
         $select_values[] = $per_page;
         $select_values[] = $offset;
 
-        $select_query = $wpdb->prepare(
-            "SELECT * FROM {$table}{$where_clause} ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d",
-            $select_values
-        );
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name comes from trusted internal method.
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
+        $select_query = $wpdb->prepare( $select_sql, $select_values );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
         $items = $wpdb->get_results( $select_query );
 
         $result = array(
@@ -361,6 +376,7 @@ class PayNexus_Payment {
 
         $table = self::table_name();
 
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
         $query = $wpdb->prepare(
             'SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM ' . $table . ' GROUP BY status'
         );
