@@ -213,11 +213,11 @@ class PayNexus_Payment {
             return $cached;
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
         $result = $wpdb->get_results( $wpdb->prepare(
             'SELECT * FROM ' . $table . ' WHERE order_id = %d ORDER BY created_at DESC',
             intval( $order_id )
         ) );
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name comes from trusted internal method.
 
         wp_cache_set( $cache_key, $result, 'paynexus', MINUTE_IN_SECONDS );
 
@@ -309,8 +309,9 @@ class PayNexus_Payment {
             $values[] = $like;
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
-        $total = (int) $wpdb->get_var( $wpdb->prepare( $count_sql, $values ) );
+        $count_query = $wpdb->prepare( $count_sql, $values );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- Query already prepared above.
+        $total = (int) $wpdb->get_var( $count_query );
 
         // Build SELECT query progressively
         $select_sql = "SELECT * FROM {$table} WHERE 1=1";
@@ -334,8 +335,9 @@ class PayNexus_Payment {
         $select_values[] = $per_page;
         $select_values[] = $offset;
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
-        $items = $wpdb->get_results( $wpdb->prepare( $select_sql, $select_values ) );
+        $select_query = $wpdb->prepare( $select_sql, $select_values );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- Query already prepared above.
+        $items = $wpdb->get_results( $select_query );
 
         $result = array(
             'items' => $items,
@@ -362,10 +364,10 @@ class PayNexus_Payment {
 
         $table = self::table_name();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
         $rows = $wpdb->get_results(
             'SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM ' . $table . ' GROUP BY status'
         );
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name comes from trusted internal method.
 
         $stats = array(
             'total_count'     => 0,
@@ -400,7 +402,7 @@ class PayNexus_Payment {
     public static function drop_table() {
         global $wpdb;
         $table_name = self::table_name();
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Intentional cleanup during uninstall.
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Trusted internal table name and intentional uninstall cleanup, caching not applicable.
         $wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
     }
 }
