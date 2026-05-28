@@ -135,7 +135,9 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
      * Process the payment.
      */
     public function process_payment( $order_id ) {
-        // WooCommerce handles nonce verification before calling this method.
+        // WooCommerce handles nonce verification (wp_verify_nonce) in the checkout process
+        // before calling this method. The nonce is checked in WC_Checkout::process_checkout()
+        // which calls this method only after successful verification.
         $order = wc_get_order( $order_id );
         $phone = sanitize_text_field( wp_unslash( $_POST['paynexus_phone'] ?? '' ) );
 
