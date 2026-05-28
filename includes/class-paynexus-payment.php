@@ -84,6 +84,7 @@ class PayNexus_Payment {
         $data['created_at'] = current_time( 'mysql', true );
         $data['updated_at'] = current_time( 'mysql', true );
 
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Required for plugin transaction storage.
         $wpdb->insert( self::table_name(), $data );
 
         $insert_id = $wpdb->insert_id ?: false;
@@ -107,6 +108,7 @@ class PayNexus_Payment {
 
         $data['updated_at'] = current_time( 'mysql', true );
 
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Required for plugin transaction storage.
         $result = $wpdb->update(
             self::table_name(),
             $data,
@@ -190,7 +192,8 @@ class PayNexus_Payment {
                 return null;
         }
 
-        $result = $wpdb->get_row( $wpdb->prepare( $sql, $value ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
+        $result = $wpdb->get_row( $wpdb->prepare( $sql, $value ) );
         wp_cache_set( $cache_key, $result, 'paynexus', HOUR_IN_SECONDS );
 
         return $result;
@@ -210,8 +213,9 @@ class PayNexus_Payment {
             return $cached;
         }
 
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
         $result = $wpdb->get_results( $wpdb->prepare(
-            'SELECT * FROM ' . $table . ' WHERE order_id = %d ORDER BY created_at DESC', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            'SELECT * FROM ' . $table . ' WHERE order_id = %d ORDER BY created_at DESC',
             intval( $order_id )
         ) );
 
@@ -248,7 +252,6 @@ class PayNexus_Payment {
         );
 
         $args     = wp_parse_args( $args, $defaults );
-        $where    = '1=1';
         $values   = array();
 
         // Create cache key based on args
@@ -259,25 +262,11 @@ class PayNexus_Payment {
             return $cached;
         }
 
-        if ( ! empty( $args['status'] ) ) {
-            $where   .= ' AND status = %s';
-            $values[] = $args['status'];
-        }
-
-        if ( ! empty( $args['search'] ) ) {
-            $search   = '%' . $wpdb->esc_like( $args['search'] ) . '%';
-            $where   .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
-            $values[] = $search;
-            $values[] = $search;
-            $values[] = $search;
-            $values[] = $search;
-        }
-
         $allowed_cols = array( 'id', 'amount', 'status', 'created_at', 'updated_at' );
         $orderby      = in_array( $args['orderby'], $allowed_cols, true ) ? $args['orderby'] : 'created_at';
         $order        = 'ASC' === strtoupper( $args['order'] ) ? 'ASC' : 'DESC';
-        $per_page     = max( 1, intval( $args['per_page'] ) );
-        $offset       = max( 0, ( intval( $args['page'] ) - 1 ) * $per_page );
+        $per_page     = absint( $args['per_page'] );
+        $offset       = absint( ( intval( $args['page'] ) - 1 ) * $per_page );
 
         // Use switch for SQL-safe orderby
         switch ( $orderby ) {
@@ -303,23 +292,50 @@ class PayNexus_Payment {
         // Use switch for SQL-safe order
         $order_sql = 'ASC' === $order ? 'ASC' : 'DESC';
 
-        if ( ! empty( $values ) ) {
-            $total = (int) $wpdb->get_var( $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $table . ' WHERE ' . $where, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                ...$values
-            ) );
-            $items = $wpdb->get_results( $wpdb->prepare(
-                'SELECT * FROM ' . $table . ' WHERE ' . $where . ' ORDER BY ' . $orderby_sql . ' ' . $order_sql . ' LIMIT %d OFFSET %d', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                ...array_merge( $values, array( $per_page, $offset ) )
-            ) );
-        } else {
-            $total = (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . $table . ' WHERE ' . $where ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-            $items = $wpdb->get_results( $wpdb->prepare(
-                'SELECT * FROM ' . $table . ' WHERE ' . $where . ' ORDER BY ' . $orderby_sql . ' ' . $order_sql . ' LIMIT %d OFFSET %d', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $per_page,
-                $offset
-            ) );
+        // Build COUNT query progressively
+        $count_sql = "SELECT COUNT(*) FROM {$table} WHERE 1=1";
+
+        if ( ! empty( $args['status'] ) ) {
+            $count_sql .= ' AND status = %s';
+            $values[] = $args['status'];
         }
+
+        if ( ! empty( $args['search'] ) ) {
+            $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+            $count_sql .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
+            $values[] = $like;
+            $values[] = $like;
+            $values[] = $like;
+            $values[] = $like;
+        }
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
+        $total = (int) $wpdb->get_var( $wpdb->prepare( $count_sql, $values ) );
+
+        // Build SELECT query progressively
+        $select_sql = "SELECT * FROM {$table} WHERE 1=1";
+        $select_values = array();
+
+        if ( ! empty( $args['status'] ) ) {
+            $select_sql .= ' AND status = %s';
+            $select_values[] = $args['status'];
+        }
+
+        if ( ! empty( $args['search'] ) ) {
+            $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+            $select_sql .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
+            $select_values[] = $like;
+            $select_values[] = $like;
+            $select_values[] = $like;
+            $select_values[] = $like;
+        }
+
+        $select_sql .= " ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d";
+        $select_values[] = $per_page;
+        $select_values[] = $offset;
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
+        $items = $wpdb->get_results( $wpdb->prepare( $select_sql, $select_values ) );
 
         $result = array(
             'items' => $items,
@@ -346,8 +362,9 @@ class PayNexus_Payment {
 
         $table = self::table_name();
 
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
         $rows = $wpdb->get_results(
-            'SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM ' . $table . ' GROUP BY status' // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            'SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM ' . $table . ' GROUP BY status'
         );
 
         $stats = array(
@@ -383,6 +400,7 @@ class PayNexus_Payment {
     public static function drop_table() {
         global $wpdb;
         $table_name = self::table_name();
-        $wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS `%s`", $table_name ) );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Intentional cleanup during uninstall.
+        $wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
     }
 }
