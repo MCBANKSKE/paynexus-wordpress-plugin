@@ -54,7 +54,7 @@
                 if ( ! /^(?:\+?254|0)\d{9}$/.test( phone ) ) {
                     return {
                         type: emitResponse.responseTypes.ERROR,
-                        message: 'Please enter a valid Kenyan phone number (e.g. 254712345678).'
+                        message: 'Please enter a valid Kenyan phone number (e.g. 254746990866).'
                     };
                 }
                 return {
@@ -106,7 +106,7 @@
                     createElement( 'input', {
                         type: 'tel',
                         id: 'paynexus-phone-block',
-                        placeholder: '712345678',
+                        placeholder: '0746990866',
                         pattern: '^(?:\\+?254|0)\\d{9}$',
                         required: true,
                         style: { flex: 1, padding: '10px 12px', border: 'none', fontSize: '15px', outline: 'none', boxShadow: 'none' },
@@ -114,7 +114,7 @@
                     } )
                 ),
                 createElement( 'div', { style: { height: '3px', borderRadius: '2px', marginTop: '4px', background: feedbackColor, transition: 'background 0.3s' } } ),
-                createElement( 'small', { style: { color: '#888', fontSize: '12px', marginTop: '4px', display: 'block' } }, 'Format: 254712345678 or 0712345678' )
+                createElement( 'small', { style: { color: '#888', fontSize: '12px', marginTop: '4px', display: 'block' } }, 'Format: 254746990866 or 0746990866' )
             ),
             createElement(
                 'div',

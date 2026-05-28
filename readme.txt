@@ -60,7 +60,7 @@ No. You can use the `[paynexus_payment_form]` shortcode on any page without WooC
 
 = What phone number format should customers use? =
 
-Kenyan phone numbers in the format 254712345678 (with country code, no +).
+Kenyan phone numbers in the format 254746990866 (with country code, no +).
 
 = How do I receive webhook notifications? =
 

@@ -74,7 +74,7 @@ class PayNexus_Shortcode {
                         <span class="pnx-phone-prefix">+254</span>
                         <input type="tel" id="paynexus-phone" name="phone"
                                required pattern="^(?:\+?254|0)\d{9}$"
-                               placeholder="<?php esc_attr_e( '712345678', 'paynexus-payment-gateway' ); ?>"
+                               placeholder="<?php esc_attr_e( '0746990866', 'paynexus-payment-gateway' ); ?>"
                                class="pnx-phone-input" />
                     </div>
                     <small class="paynexus-hint"><?php esc_html_e( 'Enter your M-Pesa registered phone number', 'paynexus-payment-gateway' ); ?></small>

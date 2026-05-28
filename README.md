@@ -236,7 +236,7 @@ Go to **WooCommerce → Settings → Payments → M-Pesa (PayNexus)** to configu
 ### Checkout Flow
 
 1. Customer selects "M-Pesa (PayNexus)" at checkout
-2. Customer enters their M-Pesa phone number (254712345678)
+2. Customer enters their M-Pesa phone number (254746990866)
 3. Customer clicks "Place Order"
 4. An STK Push is sent to their phone immediately
 5. The thank-you page shows a spinner while polling for confirmation
@@ -245,7 +245,7 @@ Go to **WooCommerce → Settings → Payments → M-Pesa (PayNexus)** to configu
 ### Phone Number Validation
 
 The plugin validates phone numbers at checkout:
-- Accepts formats: `254712345678`, `+254712345678`, `0712345678`
+- Accepts formats: `254746990866`, `+254746990866`, `0746990866`
 - Automatically normalises to `254...` format before sending to PayNexus
 
 ### Order Meta
@@ -297,7 +297,7 @@ PayNexus sends the following payload:
     "reference": "PNX-abc123",
     "amount": "1000.00",
     "currency": "KES",
-    "phone": "254712345678",
+    "phone": "254746990866",
     "status": "completed",
     "checkout_request_id": "ws_CO_123456",
     "transaction_id": "SH1234ABCDE",
@@ -394,7 +394,7 @@ $accounts = paynexus()->client->get_payment_accounts();
 ```php
 $result = paynexus()->client->initiate_payment([
     'amount'      => 1500,
-    'phone'       => '254712345678',
+    'phone'       => '254746990866',
     'description' => 'Payment for Order #123',
 ]);
 
@@ -409,7 +409,7 @@ if ( $result['success'] ) {
 ```php
 $result = paynexus()->client->initiate_mpesa_payment([
     'amount' => 1000,
-    'phone'  => '254712345678',
+    'phone'  => '254746990866',
     'remark' => 'Monthly subscription',
 ]);
 ```
@@ -452,7 +452,7 @@ $payments = paynexus()->client->list_payments([
 ### Phone Validation
 
 ```php
-$result = paynexus()->client->validate_phone( '0712345678' );
+$result = paynexus()->client->validate_phone( '0746990866' );
 // Returns normalised phone number and validation status
 ```
 
@@ -576,7 +576,7 @@ For full control, build your own form and use the AJAX endpoints:
 ```html
 <form id="my-payment-form">
     <input type="number" name="amount" required />
-    <input type="tel" name="phone" placeholder="254712345678" required />
+    <input type="tel" name="phone" placeholder="254746990866" required />
     <button type="submit">Pay Now</button>
 </form>
 

@@ -90,12 +90,12 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
                 <div class="pnx-phone-input-wrap">
                     <span class="pnx-phone-prefix">+254</span>
                     <input type="tel" class="input-text pnx-phone-input" id="paynexus_phone" name="paynexus_phone"
-                           placeholder="<?php esc_attr_e( '712345678', 'paynexus-payment-gateway' ); ?>"
+                           placeholder="<?php esc_attr_e( '0746990866', 'paynexus-payment-gateway' ); ?>"
                            pattern="^(?:\+?254|0)\d{9}$" required
                            oninput="(function(el){var v=el.value.replace(/\D/g,'');var ok=/^(?:254\d{9}|0\d{9}|\d{9})$/.test(v);var fb=el.parentNode.nextElementSibling;if(fb){fb.className='pnx-phone-feedback'+(v.length>0?(ok?' pnx-phone-valid':' pnx-phone-invalid'):'')}})(this)" />
                 </div>
                 <span class="pnx-phone-feedback" id="pnx-phone-feedback"></span>
-                <small class="pnx-phone-hint"><?php esc_html_e( 'Format: 254712345678 or 0712345678', 'paynexus-payment-gateway' ); ?></small>
+                <small class="pnx-phone-hint"><?php esc_html_e( 'Format: 254746990866 or 0746990866', 'paynexus-payment-gateway' ); ?></small>
             </div>
             <div class="pnx-secure-badge">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00A650" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -131,7 +131,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
         }
 
         if ( ! preg_match( '/^(?:\+?254|0)\d{9}$/', $phone ) ) {
-            wc_add_notice( __( 'Please enter a valid Kenyan phone number (e.g., 254712345678).', 'paynexus-payment-gateway' ), 'error' );
+            wc_add_notice( __( 'Please enter a valid Kenyan phone number (e.g., 254746990866).', 'paynexus-payment-gateway' ), 'error' );
             return false;
         }
 
