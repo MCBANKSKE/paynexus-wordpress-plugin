@@ -303,23 +303,14 @@ class PayNexus_Payment {
         // Use switch for SQL-safe order
         $order_sql = 'ASC' === $order ? 'ASC' : 'DESC';
 
-        if ( ! empty( $values ) ) {
-            $total = (int) $wpdb->get_var( $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $table . ' WHERE ' . $where,
-                ...$values
-            ) );
-            $items = $wpdb->get_results( $wpdb->prepare(
-                'SELECT * FROM ' . $table . ' WHERE ' . $where . ' ORDER BY ' . $orderby_sql . ' ' . $order_sql . ' LIMIT %d OFFSET %d',
-                ...array_merge( $values, array( $per_page, $offset ) )
-            ) );
-        } else {
-            $total = (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . $table . ' WHERE ' . $where );
-            $items = $wpdb->get_results( $wpdb->prepare(
-                'SELECT * FROM ' . $table . ' WHERE ' . $where . ' ORDER BY ' . $orderby_sql . ' ' . $order_sql . ' LIMIT %d OFFSET %d',
-                $per_page,
-                $offset
-            ) );
-        }
+        $total = (int) $wpdb->get_var( $wpdb->prepare(
+            'SELECT COUNT(*) FROM ' . $table . ' WHERE ' . $where,
+            ...$values
+        ) );
+        $items = $wpdb->get_results( $wpdb->prepare(
+            'SELECT * FROM ' . $table . ' WHERE ' . $where . ' ORDER BY ' . $orderby_sql . ' ' . $order_sql . ' LIMIT %d OFFSET %d',
+            ...array_merge( $values, array( $per_page, $offset ) )
+        ) );
 
         $result = array(
             'items' => $items,
