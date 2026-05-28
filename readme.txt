@@ -1,5 +1,5 @@
 === PayNexus Payment Gateway ===
-Contributors: paynexus, mcbankske
+Contributors: paynexus
 Tags: payment, mpesa, mobile money, woocommerce, kenya
 Requires at least: 5.8
 Tested up to: 7.0

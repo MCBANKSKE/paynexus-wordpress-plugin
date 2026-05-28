@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       PayNexus Payment Gateway
- * Plugin URI:        https://github.com/MCBANKSKE/paynexus
+ * Plugin URI:        https://github.com/MCBANKSKE/paynexus-wordpress-plugin
  * Description:       Accept M-Pesa payments through PayNexus in any WordPress or WooCommerce site. Supports STK Push, real-time status tracking, webhooks, and local payment records.
  * Version:           1.0.0
  * Author:            PayNexus

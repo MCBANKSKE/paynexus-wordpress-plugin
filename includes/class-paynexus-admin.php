@@ -152,7 +152,7 @@ class PayNexus_Admin {
         $sanitized['secret_key']      = sanitize_text_field( $input['secret_key'] ?? '' );
         $sanitized['public_key']      = sanitize_text_field( $input['public_key'] ?? '' );
         $sanitized['base_url']        = esc_url_raw( $input['base_url'] ?? 'https://paynexus.co.ke' );
-        $sanitized['webhook_secret']  = sanitize_text_field( $input['webhook_secret'] ?? '' );
+        $sanitized['webhook_secret']  = isset( $input['webhook_secret'] ) ? wp_unslash( $input['webhook_secret'] ) : '';
         $sanitized['currency']        = sanitize_text_field( $input['currency'] ?? 'KES' );
         $sanitized['poll_interval']   = absint( $input['poll_interval'] ?? 3 );
         $sanitized['poll_timeout']    = absint( $input['poll_timeout'] ?? 120 );

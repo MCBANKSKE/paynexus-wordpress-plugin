@@ -102,20 +102,6 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
                 <span><?php esc_html_e( 'Secured by PayNexus', 'paynexus-payment-gateway' ); ?></span>
             </div>
         </fieldset>
-        <style>
-        .pnx-checkout-fields{border:1px solid #e0e0e0!important;border-radius:8px;padding:16px!important;background:#fafffe}
-        .pnx-phone-label{display:flex!important;align-items:center;font-weight:600;font-size:14px;color:#333;margin-bottom:8px}
-        .pnx-phone-input-wrap{display:flex;align-items:center;border:1px solid #ccc;border-radius:6px;overflow:hidden;transition:border-color 0.2s}
-        .pnx-phone-input-wrap:focus-within{border-color:#00A650;box-shadow:0 0 0 2px rgba(0,166,80,0.12)}
-        .pnx-phone-prefix{padding:10px 12px;background:#f5f5f5;color:#333;font-weight:600;font-size:14px;border-right:1px solid #e0e0e0;white-space:nowrap}
-        .pnx-phone-input{border:none!important;box-shadow:none!important;padding:10px 12px!important;font-size:15px;flex:1;outline:none}
-        .pnx-phone-input:focus{box-shadow:none!important}
-        .pnx-phone-feedback{display:block;height:4px;border-radius:2px;margin-top:4px;transition:all 0.3s}
-        .pnx-phone-valid{background:#00A650}
-        .pnx-phone-invalid{background:#e53935}
-        .pnx-phone-hint{display:block;margin-top:4px;font-size:12px;color:#888}
-        .pnx-secure-badge{display:flex;align-items:center;gap:4px;margin-top:12px;font-size:11px;color:#00A650}
-        </style>
         <?php
     }
 
@@ -216,6 +202,16 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
         $poll_timeout  = absint( paynexus()->get_option( 'poll_timeout', 120 ) ) * 1000;
         $ajax_url      = admin_url( 'admin-ajax.php' );
         $nonce         = wp_create_nonce( 'paynexus_payment' );
+
+        // Localize script with PHP variables
+        wp_localize_script( 'paynexus-woocommerce', 'paynexus_woo_params', array(
+            'checkout_id'   => $checkout_id,
+            'reference'     => $reference,
+            'ajax_url'      => $ajax_url,
+            'nonce'         => $nonce,
+            'poll_interval' => $poll_interval,
+            'poll_timeout'  => $poll_timeout,
+        ) );
         ?>
         <div class="pnx-thankyou" id="paynexus-order-status">
             <div class="pnx-thankyou__card" id="pnx-card">
@@ -272,134 +268,6 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
             </div>
             <p class="pnx-thankyou__footer"><?php esc_html_e( 'Secured by PayNexus', 'paynexus-payment-gateway' ); ?></p>
         </div>
-
-        <style>
-        .pnx-thankyou{max-width:480px;margin:24px auto;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-        .pnx-thankyou__card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:28px 24px;box-shadow:0 4px 16px rgba(0,0,0,0.06);text-align:center}
-        .pnx-thankyou__header{margin-bottom:20px}
-        .pnx-thankyou__logo{max-height:40px;width:auto}
-        .pnx-thankyou__phone-anim{margin:16px 0 24px;animation:pnx-pulse 2s ease-in-out infinite}
-        .pnx-thankyou__phone-anim svg{margin:0 auto;display:block}
-        .pnx-thankyou__prompt{font-size:15px;color:#333;font-weight:600;margin:10px 0 4px}
-        .pnx-thankyou__phone-num{font-size:13px;color:#666;background:#f5f5f5;padding:2px 10px;border-radius:12px;display:inline-block}
-        .pnx-thankyou__stepper{display:flex;align-items:center;justify-content:center;gap:0;margin:20px 0;padding:0 8px}
-        .pnx-step{display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto}
-        .pnx-step__icon{width:36px;height:36px;border-radius:50%;background:#f0f0f0;color:#999;display:flex;align-items:center;justify-content:center;transition:all 0.4s ease}
-        .pnx-step--active .pnx-step__icon{background:#e8f5e9;color:#00A650}
-        .pnx-step--done .pnx-step__icon{background:#00A650;color:#fff}
-        .pnx-step__label{font-size:11px;color:#999;font-weight:500;white-space:nowrap;transition:color 0.3s}
-        .pnx-step--active .pnx-step__label{color:#00A650;font-weight:600}
-        .pnx-step--done .pnx-step__label{color:#00A650}
-        .pnx-step__line{flex:1;height:2px;background:#e0e0e0;min-width:20px;margin:0 4px;transition:background 0.4s;align-self:center;margin-bottom:18px}
-        .pnx-step__line.pnx-step__line--done{background:#00A650}
-        .pnx-thankyou__status{padding:12px 0}
-        .pnx-thankyou__spinner{width:32px;height:32px;border:3px solid #e0e0e0;border-top-color:#00A650;border-radius:50%;animation:pnx-spin 0.8s linear infinite;margin:0 auto 10px}
-        .pnx-thankyou__msg{font-size:14px;color:#555;margin:0}
-        .pnx-thankyou__result{margin-top:16px;padding:16px;border-radius:8px;text-align:left}
-        .pnx-thankyou__result--success{background:#e8f5e9;border:1px solid #a5d6a7}
-        .pnx-thankyou__result--failed{background:#fce8e6;border:1px solid #f5c6cb}
-        .pnx-thankyou__result--timeout{background:#fff8e1;border:1px solid #ffe082}
-        .pnx-thankyou__result h4{margin:0 0 8px;font-size:16px}
-        .pnx-thankyou__result p{margin:4px 0;font-size:13px;color:#555}
-        .pnx-thankyou__result .pnx-txn-id{font-family:monospace;background:#f5f5f5;padding:2px 8px;border-radius:4px;font-size:13px}
-        .pnx-thankyou__footer{text-align:center;font-size:11px;color:#aaa;margin-top:12px}
-        @keyframes pnx-spin{to{transform:rotate(360deg)}}
-        @keyframes pnx-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-        </style>
-
-        <script>
-        (function(){
-            var checkoutId = <?php echo wp_json_encode( $checkout_id ); ?>;
-            var reference  = <?php echo wp_json_encode( $reference ); ?>;
-            var ajaxUrl    = <?php echo wp_json_encode( $ajax_url ); ?>;
-            var nonce      = <?php echo wp_json_encode( $nonce ); ?>;
-            var interval   = <?php echo (int) $poll_interval; ?> || 3000;
-            var timeout    = <?php echo (int) $poll_timeout; ?> || 120000;
-            var start      = Date.now();
-            var spinner    = document.getElementById('pnx-spinner');
-            var msg        = document.getElementById('pnx-status-msg');
-            var result     = document.getElementById('pnx-result');
-            var phoneAnim  = document.getElementById('pnx-phone-anim');
-            var steps      = [document.getElementById('pnx-step-1'),document.getElementById('pnx-step-2'),document.getElementById('pnx-step-3'),document.getElementById('pnx-step-4')];
-            var lines      = document.querySelectorAll('.pnx-step__line');
-            var pollCount  = 0;
-
-            function setStep(n) {
-                for (var i = 0; i < steps.length; i++) {
-                    steps[i].className = 'pnx-step' + (i < n ? ' pnx-step--done' : (i === n ? ' pnx-step--active' : ''));
-                }
-                for (var j = 0; j < lines.length; j++) {
-                    lines[j].className = 'pnx-step__line' + (j < n ? ' pnx-step__line--done' : '');
-                }
-            }
-
-            if (!checkoutId && !reference) return;
-
-            setTimeout(function(){ setStep(1); }, 5000);
-            setTimeout(function(){ setStep(2); }, 15000);
-
-            var timer = setInterval(function(){
-                pollCount++;
-                if (Date.now() - start > timeout) {
-                    clearInterval(timer);
-                    if (spinner) spinner.style.display = 'none';
-                    if (phoneAnim) phoneAnim.style.display = 'none';
-                    if (msg) msg.style.display = 'none';
-                    if (result) {
-                        result.style.display = 'block';
-                        result.className = 'pnx-thankyou__result pnx-thankyou__result--timeout';
-                        result.innerHTML = '<h4 style="color:#f57f17;">&#9888; Confirmation Timed Out</h4>'
-                            + '<p>Your payment may still be processing. Please check your order status or contact support if the amount was deducted.</p>';
-                    }
-                    return;
-                }
-
-                var body = new FormData();
-                body.append('action', 'paynexus_check_status');
-                body.append('nonce', nonce);
-                if (checkoutId) body.append('checkout_request_id', checkoutId);
-                if (reference) body.append('reference', reference);
-
-                fetch(ajaxUrl, {method:'POST', body:body, credentials:'same-origin'})
-                    .then(function(r){ return r.json(); })
-                    .then(function(res){
-                        if (!res || !res.success) return;
-                        var d = res.data || {};
-                        var status = d.status || '';
-
-                        if (status === 'completed') {
-                            clearInterval(timer);
-                            setStep(4);
-                            if (spinner) spinner.style.display = 'none';
-                            if (phoneAnim) phoneAnim.style.display = 'none';
-                            if (msg) msg.style.display = 'none';
-                            var txnId = d.provider_transaction_id || d.transaction_id || '';
-                            if (result) {
-                                result.style.display = 'block';
-                                result.className = 'pnx-thankyou__result pnx-thankyou__result--success';
-                                result.innerHTML = '<h4 style="color:#1b5e20;">&#10003; Payment Successful!</h4>'
-                                    + (txnId ? '<p><strong>Transaction ID:</strong> <span class="pnx-txn-id">' + txnId + '</span></p>' : '')
-                                    + '<p style="color:#888;font-size:12px;margin-top:8px;">Redirecting...</p>';
-                            }
-                            setTimeout(function(){ window.location.reload(); }, 2500);
-                        } else if (status === 'failed') {
-                            clearInterval(timer);
-                            if (spinner) spinner.style.display = 'none';
-                            if (phoneAnim) phoneAnim.style.display = 'none';
-                            if (msg) msg.style.display = 'none';
-                            if (result) {
-                                result.style.display = 'block';
-                                result.className = 'pnx-thankyou__result pnx-thankyou__result--failed';
-                                result.innerHTML = '<h4 style="color:#c62828;">&#10007; Payment Failed</h4>'
-                                    + '<p>' + (d.failure_reason || d.result_description || 'The payment was not completed.') + '</p>'
-                                    + '<p style="margin-top:8px;"><a href="javascript:window.location.reload()" style="color:#1976d2;text-decoration:underline;">Try again</a></p>';
-                            }
-                        }
-                    })
-                    .catch(function(){});
-            }, interval);
-        })();
-        </script>
         <?php
     }
 
@@ -407,9 +275,29 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
      * Enqueue scripts on checkout and thank-you pages.
      */
     public function enqueue_scripts() {
-        if ( is_checkout() || is_wc_endpoint_url( 'order-received' ) ) {
-            wp_enqueue_style( 'paynexus-payment' );
-            wp_enqueue_script( 'paynexus-payment' );
+        if ( is_checkout() ) {
+            wp_enqueue_style(
+                'paynexus-woocommerce',
+                PAYNEXUS_PLUGIN_URL . 'assets/css/paynexus-woocommerce.css',
+                array(),
+                PAYNEXUS_VERSION
+            );
+        }
+
+        if ( is_wc_endpoint_url( 'order-received' ) ) {
+            wp_enqueue_style(
+                'paynexus-woocommerce',
+                PAYNEXUS_PLUGIN_URL . 'assets/css/paynexus-woocommerce.css',
+                array(),
+                PAYNEXUS_VERSION
+            );
+            wp_enqueue_script(
+                'paynexus-woocommerce',
+                PAYNEXUS_PLUGIN_URL . 'assets/js/paynexus-woocommerce.js',
+                array(),
+                PAYNEXUS_VERSION,
+                true
+            );
         }
     }
 }

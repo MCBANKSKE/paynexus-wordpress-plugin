@@ -32,9 +32,13 @@ class PayNexus_Webhook {
     public static function verify_signature( $request ) {
         $secret = paynexus()->get_option( 'webhook_secret', '' );
 
-        // If no secret is configured, allow the request (development convenience).
+        // Webhook secret is required for security.
         if ( empty( $secret ) ) {
-            return true;
+            return new WP_Error(
+                'paynexus_no_secret',
+                __( 'Webhook secret not configured', 'paynexus-payment-gateway' ),
+                array( 'status' => 403 )
+            );
         }
 
         $signature = $request->get_header( 'X-PayNexus-Signature' );
