@@ -446,7 +446,7 @@ class PayNexus_Payment {
     public static function drop_table() {
         global $wpdb;
         $table_name = self::table_name();
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Trusted internal table name and intentional uninstall cleanup, caching not applicable.
-        $wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.DirectDatabaseQuery.NoCaching -- Trusted internal table name and intentional uninstall cleanup, caching not applicable.
+        $wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
     }
 }
