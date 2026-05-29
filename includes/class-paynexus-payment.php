@@ -223,7 +223,7 @@ class PayNexus_Payment {
 
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
         $query = $wpdb->prepare(
-            'SELECT * FROM ' . $table . ' WHERE order_id = %d ORDER BY created_at DESC',
+            'SELECT * FROM ' . $table . ' WHERE order_id = %d ORDER BY created_at DESC', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             intval( $order_id )
         );
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name comes from trusted internal method.
@@ -302,17 +302,16 @@ class PayNexus_Payment {
         // Use switch for SQL-safe order
         $order_sql = 'ASC' === $order ? 'ASC' : 'DESC';
 
-        // Build COUNT query progressively
-        $count_sql = "SELECT COUNT(*) FROM {$table} WHERE 1=1";
-
+        // Build COUNT query using prepare directly
+        $count_where = '';
         if ( ! empty( $args['status'] ) ) {
-            $count_sql .= ' AND status = %s';
+            $count_where .= ' AND status = %s';
             $values[] = $args['status'];
         }
 
         if ( ! empty( $args['search'] ) ) {
             $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
-            $count_sql .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
+            $count_where .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
             $values[] = $like;
             $values[] = $like;
             $values[] = $like;
@@ -320,32 +319,31 @@ class PayNexus_Payment {
         }
 
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
-        $total = (int) $wpdb->get_var( $wpdb->prepare( $count_sql, $values ) );
+        $total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE 1=1{$count_where}", $values ) );
 
-        // Build SELECT query progressively
-        $select_sql = "SELECT * FROM {$table} WHERE 1=1";
+        // Build SELECT query using prepare directly
+        $select_where = '';
         $select_values = array();
 
         if ( ! empty( $args['status'] ) ) {
-            $select_sql .= ' AND status = %s';
+            $select_where .= ' AND status = %s';
             $select_values[] = $args['status'];
         }
 
         if ( ! empty( $args['search'] ) ) {
             $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
-            $select_sql .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
+            $select_where .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
             $select_values[] = $like;
             $select_values[] = $like;
             $select_values[] = $like;
             $select_values[] = $like;
         }
 
-        $select_sql .= " ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d";
         $select_values[] = $per_page;
         $select_values[] = $offset;
 
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
-        $items = $wpdb->get_results( $wpdb->prepare( $select_sql, $select_values ) );
+        $items = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} WHERE 1=1{$select_where} ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", $select_values ) );
 
         $result = array(
             'items' => $items,
@@ -374,7 +372,7 @@ class PayNexus_Payment {
 
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
         $query = $wpdb->prepare(
-            'SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM ' . $table . ' GROUP BY status'
+            'SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM ' . $table . ' GROUP BY status' // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
         );
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name comes from trusted internal method.
         $rows = $wpdb->get_results( $query );
