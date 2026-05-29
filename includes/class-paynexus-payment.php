@@ -335,7 +335,7 @@ class PayNexus_Payment {
             ) );
         } else {
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
-            $total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table}" ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         }
 
         // Build SELECT query using separate branches for each filter combination
@@ -343,7 +343,7 @@ class PayNexus_Payment {
             $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
             $items = $wpdb->get_results( $wpdb->prepare(
-                "SELECT * FROM {$table} WHERE status = %s AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s) ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT * FROM {$table} WHERE status = %s AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s) ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $orderby_sql and $order_sql are whitelisted via switch statements
                 $args['status'],
                 $like,
                 $like,
@@ -355,7 +355,7 @@ class PayNexus_Payment {
         } elseif ( $has_status ) {
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
             $items = $wpdb->get_results( $wpdb->prepare(
-                "SELECT * FROM {$table} WHERE status = %s ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT * FROM {$table} WHERE status = %s ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $orderby_sql and $order_sql are whitelisted via switch statements
                 $args['status'],
                 $per_page,
                 $offset
@@ -364,7 +364,7 @@ class PayNexus_Payment {
             $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
             $items = $wpdb->get_results( $wpdb->prepare(
-                "SELECT * FROM {$table} WHERE phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT * FROM {$table} WHERE phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $orderby_sql and $order_sql are whitelisted via switch statements
                 $like,
                 $like,
                 $like,
@@ -375,7 +375,7 @@ class PayNexus_Payment {
         } else {
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
             $items = $wpdb->get_results( $wpdb->prepare(
-                "SELECT * FROM {$table} ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT * FROM {$table} ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $orderby_sql and $order_sql are whitelisted via switch statements
                 $per_page,
                 $offset
             ) );
