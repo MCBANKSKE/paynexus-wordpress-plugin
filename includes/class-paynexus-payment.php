@@ -319,10 +319,8 @@ class PayNexus_Payment {
             $values[] = $like;
         }
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
-        $count_query = $wpdb->prepare( $count_sql, $values );
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
-        $total = (int) $wpdb->get_var( $count_query );
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
+        $total = (int) $wpdb->get_var( $wpdb->prepare( $count_sql, $values ) );
 
         // Build SELECT query progressively
         $select_sql = "SELECT * FROM {$table} WHERE 1=1";
@@ -346,10 +344,8 @@ class PayNexus_Payment {
         $select_values[] = $per_page;
         $select_values[] = $offset;
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name from trusted internal method.
-        $select_query = $wpdb->prepare( $select_sql, $select_values );
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin transaction table query.
-        $items = $wpdb->get_results( $select_query );
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
+        $items = $wpdb->get_results( $wpdb->prepare( $select_sql, $select_values ) );
 
         $result = array(
             'items' => $items,
