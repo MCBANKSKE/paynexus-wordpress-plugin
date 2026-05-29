@@ -302,47 +302,84 @@ class PayNexus_Payment {
         // Use switch for SQL-safe order
         $order_sql = 'ASC' === $order ? 'ASC' : 'DESC';
 
-        // Build COUNT query with placeholders based on conditions
-        $count_query = "SELECT COUNT(*) FROM {$table} WHERE 1=1"; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        if ( ! empty( $args['status'] ) ) {
-            $count_query .= ' AND status = %s';
-            $values[] = $args['status'];
-        }
-        if ( ! empty( $args['search'] ) ) {
+        // Build COUNT query using separate branches for each filter combination
+        $has_status = ! empty( $args['status'] );
+        $has_search = ! empty( $args['search'] );
+
+        if ( $has_status && $has_search ) {
             $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
-            $count_query .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
-            $values[] = $like;
-            $values[] = $like;
-            $values[] = $like;
-            $values[] = $like;
-        }
-
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
-        $total = (int) $wpdb->get_var( $wpdb->prepare( $count_query, $values ) );
-
-        // Build SELECT query with placeholders based on conditions
-        $select_query = "SELECT * FROM {$table} WHERE 1=1"; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $select_values = array();
-
-        if ( ! empty( $args['status'] ) ) {
-            $select_query .= ' AND status = %s';
-            $select_values[] = $args['status'];
-        }
-        if ( ! empty( $args['search'] ) ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
+            $total = (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$table} WHERE status = %s AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $args['status'],
+                $like,
+                $like,
+                $like,
+                $like
+            ) );
+        } elseif ( $has_status ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
+            $total = (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$table} WHERE status = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $args['status']
+            ) );
+        } elseif ( $has_search ) {
             $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
-            $select_query .= ' AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s)';
-            $select_values[] = $like;
-            $select_values[] = $like;
-            $select_values[] = $like;
-            $select_values[] = $like;
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
+            $total = (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$table} WHERE phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $like,
+                $like,
+                $like,
+                $like
+            ) );
+        } else {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
+            $total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         }
 
-        $select_query .= " ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d"; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $select_values[] = $per_page;
-        $select_values[] = $offset;
-
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
-        $items = $wpdb->get_results( $wpdb->prepare( $select_query, $select_values ) );
+        // Build SELECT query using separate branches for each filter combination
+        if ( $has_status && $has_search ) {
+            $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
+            $items = $wpdb->get_results( $wpdb->prepare(
+                "SELECT * FROM {$table} WHERE status = %s AND (phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s) ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $args['status'],
+                $like,
+                $like,
+                $like,
+                $like,
+                $per_page,
+                $offset
+            ) );
+        } elseif ( $has_status ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
+            $items = $wpdb->get_results( $wpdb->prepare(
+                "SELECT * FROM {$table} WHERE status = %s ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $args['status'],
+                $per_page,
+                $offset
+            ) );
+        } elseif ( $has_search ) {
+            $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
+            $items = $wpdb->get_results( $wpdb->prepare(
+                "SELECT * FROM {$table} WHERE phone LIKE %s OR reference LIKE %s OR transaction_id LIKE %s OR payer_name LIKE %s ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $like,
+                $like,
+                $like,
+                $like,
+                $per_page,
+                $offset
+            ) );
+        } else {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table name from trusted internal method.
+            $items = $wpdb->get_results( $wpdb->prepare(
+                "SELECT * FROM {$table} ORDER BY {$orderby_sql} {$order_sql} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $per_page,
+                $offset
+            ) );
+        }
 
         $result = array(
             'items' => $items,
