@@ -109,13 +109,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
      * Validate checkout fields.
      */
     public function validate_fields() {
-        // WooCommerce handles nonce verification before calling this method,
-        // but we verify it here to satisfy security linters.
-        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'process-checkout' ) ) {
-            wc_add_notice( __( 'Security verification failed. Please try again.', 'paynexus-payment-gateway' ), 'error' );
-            return false;
-        }
-
+        // WooCommerce handles nonce verification before calling this method.
         $phone = sanitize_text_field( wp_unslash( $_POST['paynexus_phone'] ?? '' ) );
 
         if ( empty( $phone ) ) {
