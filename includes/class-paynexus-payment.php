@@ -334,8 +334,7 @@ class PayNexus_Payment {
                 $like
             ) );
         } else {
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,PluginCheck.Security.DirectDB.DirectQuery -- Table name from trusted internal method.
-            $total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table}" ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table}" ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,PluginCheck.Security.DirectDB.DirectQuery -- Table name from trusted internal method.
         }
 
         // Build SELECT query using separate branches for each filter combination
@@ -446,7 +445,6 @@ class PayNexus_Payment {
     public static function drop_table() {
         global $wpdb;
         $table_name = self::table_name();
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.DirectQuery -- Trusted internal table name and intentional uninstall cleanup, caching not applicable.
-        $wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
+        $wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.DirectQuery -- Trusted internal table name and intentional uninstall cleanup, caching not applicable.
     }
 }
