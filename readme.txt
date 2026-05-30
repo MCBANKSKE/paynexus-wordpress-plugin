@@ -4,7 +4,7 @@ Tags: payment, mpesa, mobile money, woocommerce, kenya
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -68,9 +68,11 @@ Set your webhook URL to `https://yoursite.com/wp-json/paynexus/v1/webhook` in th
 
 == Changelog ==
 
+= 1.0.2 =
+* Updated plugin to meet WordPress plugin standards
+
 = 1.0.1 =
 * Fixed security vulnerabilities
-* Updated plugin to meet WordPress plugin standards
 
 = 1.0.0 =
 * Initial release
