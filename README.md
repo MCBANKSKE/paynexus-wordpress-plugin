@@ -691,8 +691,9 @@ Deactivating the plugin does NOT remove any data.
 
 - **Documentation:** This README
 - **Issues:** [GitHub Issues](https://github.com/MCBANKSKE/paynexus/issues)
-- **Email:** support@paynexus.co.ke
-- **Website:** [paynexus.co.ke](https://paynexus.co.ke)
+- **Email:** 📧 support@paynexus.co.ke
+- **Website:** 🌐 [paynexus.co.ke](https://paynexus.co.ke)
+- **Phone:** 📞 +254746990866
 
 ---
 
