@@ -110,7 +110,7 @@ class PayNexus_WooCommerce extends WC_Payment_Gateway {
      */
     public function validate_fields() {
         // WooCommerce handles nonce verification before calling this method.
-        $phone = sanitize_text_field( wp_unslash( $_POST['paynexus_phone'] ?? '' ) );
+        $phone = sanitize_text_field( wp_unslash( $_POST['paynexus_phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
         if ( empty( $phone ) ) {
             wc_add_notice( __( 'Please enter your M-Pesa phone number.', 'paynexus-payment-gateway' ), 'error' );
